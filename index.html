@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Cards — Aprende consultas SQL</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --bg-elev: #1a2028;
+    --bg-card: #232b36;
+    --border: #2d3748;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent-2: #7ee787;
+    --warn: #f0883e;
+    --danger: #f85149;
+    --purple: #bc8cff;
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --number: #79c0ff;
+    --comment: #8b949e;
+    --function: #d2a8ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .logo span { color: var(--accent-2); }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav button {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid transparent;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+  }
+  nav button:hover { color: var(--text); background: var(--bg-card); }
+  nav button.active { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,0.1); }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+  .filter-group { display: flex; gap: 6px; }
+  .chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+  }
+  .chip:hover { color: var(--text); }
+  .chip.active { color: var(--bg); font-weight: 600; }
+  .chip.basic.active { background: var(--accent-2); border-color: var(--accent-2); }
+  .chip.medium.active { background: var(--warn); border-color: var(--warn); }
+  .chip.expert.active { background: var(--danger); border-color: var(--danger); }
+  .chip.all.active { background: var(--accent); border-color: var(--accent); }
+
+  /* Card study mode */
+  .card-container {
+    perspective: 1500px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 380px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    transition: transform 0.15s;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-level {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .card-level.basic { background: rgba(126,231,135,0.15); color: var(--accent-2); }
+  .card-level.medium { background: rgba(240,136,62,0.15); color: var(--warn); }
+  .card-level.expert { background: rgba(248,81,73,0.15); color: var(--danger); }
+  .card-counter { color: var(--text-dim); font-size: 0.85rem; }
+
+  pre.sql {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .kw { color: var(--keyword); font-weight: 600; }
+  .fn { color: var(--function); }
+  .str { color: var(--string); }
+  .num { color: var(--number); }
+  .cmt { color: var(--comment); font-style: italic; }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  button.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  button.btn:hover { background: var(--bg-card); border-color: var(--accent); }
+  button.btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  button.btn.primary:hover { background: #4a91e0; }
+  button.btn.success { background: var(--accent-2); color: var(--bg); border-color: var(--accent-2); }
+  button.btn.warn { background: var(--warn); color: var(--bg); border-color: var(--warn); }
+  button.btn.danger { background: var(--danger); color: var(--bg); border-color: var(--danger); }
+
+  .reveal {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .reveal.visible { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal h3 { color: var(--accent); margin-bottom: 8px; }
+  .reveal .titulo { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: var(--accent-2); }
+  .reveal .explicacion { color: var(--text); margin-bottom: 12px; }
+  .reveal .resultado {
+    background: #0d1117;
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    white-space: pre-wrap;
+    border-radius: 4px;
+  }
+  .concepts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+  .concept-tag {
+    background: rgba(188,140,255,0.15);
+    color: var(--purple);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 1px solid rgba(188,140,255,0.3);
+  }
+  .concept-tag:hover { background: rgba(188,140,255,0.25); }
+
+  /* Dictionary */
+  .dict-search {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+  .dict-search:focus { outline: none; border-color: var(--accent); }
+  .dict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .dict-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.15s;
+  }
+  .dict-item:hover { border-color: var(--accent); }
+  .dict-item h4 { color: var(--accent); margin-bottom: 6px; font-size: 1rem; }
+  .dict-item .categoria { color: var(--purple); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .dict-item .def { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px; }
+  .dict-item pre.sql { font-size: 0.8rem; padding: 10px; }
+
+  /* Case detail */
+  .case-item { grid-column: 1 / -1; }
+  .case-item .problema { color: var(--warn); font-size: 0.85rem; margin-bottom: 8px; font-weight: 500; }
+  .solucion { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .solucion .sol-titulo { color: var(--accent-2); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+  .solucion .sol-nota { color: var(--text-dim); font-size: 0.85rem; margin-top: 6px; font-style: italic; }
+
+  /* Progress */
+  .stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 14px 20px;
+    background: var(--bg-elev);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .stat { flex: 1; min-width: 100px; }
+  .stat-label { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { color: var(--accent); font-size: 1.6rem; font-weight: 700; margin-top: 2px; }
+
+  .empty { text-align: center; color: var(--text-dim); padding: 60px 20px; font-style: italic; }
+
+  /* Share bar */
+  .share-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 600px) {
+    main { padding: 14px; }
+    .card { padding: 16px; min-height: 320px; }
+    pre.sql { font-size: 0.8rem; }
+    .stat-value { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">SQL<span>Cards</span></div>
+    <nav>
+      <button class="active" data-view="estudio">📚 Estudio</button>
+      <button data-view="ejercicios">✏️ Ejercicios</button>
+      <button data-view="conceptos">📖 Conceptos</button>
+      <button data-view="casos">🧩 Casos</button>
+      <button data-view="ayuda">ℹ️ Cómo funciona</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- STUDY VIEW -->
+  <section id="view-estudio" class="view active">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Cartas totales</div><div class="stat-value" id="stat-total">0</div></div>
+      <div class="stat"><div class="stat-label">Vistas</div><div class="stat-value" id="stat-vistas">0</div></div>
+      <div class="stat"><div class="stat-label">Dominadas</div><div class="stat-value" id="stat-dominadas">0</div></div>
+      <div class="stat"><div class="stat-label">Racha</div><div class="stat-value" id="stat-racha">0</div></div>
+    </div>
+
+    <div class="filters">
+      <span style="color:var(--text-dim);font-size:0.85rem;">Nivel:</span>
+      <div class="filter-group" id="filter-nivel">
+        <button class="chip all active" data-nivel="todos">Todos</button>
+        <button class="chip basic" data-nivel="basico">Básico</button>
+        <button class="chip medium" data-nivel="medio">Medio</button>
+        <button class="chip expert" data-nivel="experto">Experto</button>
+      </div>
+    </div>
+
+    <div class="card-container">
+      <div class="card" id="card">
+        <div class="card-header">
+          <span class="card-level" id="card-level">—</span>
+          <span class="card-counter" id="card-counter">0 / 0</span>
+        </div>
+        <div id="card-body">
+          <pre class="sql" id="card-sql">-- Cargando...</pre>
+          <div class="reveal" id="card-reveal">
+            <div class="titulo" id="reveal-titulo"></div>
+            <div class="explicacion" id="reveal-explicacion"></div>
+            <div class="resultado" id="reveal-resultado" style="display:none"></div>
+            <div class="concepts" id="reveal-concepts"></div>
+          </div>
+        </div>
+        <div class="card-actions" id="card-actions-pre">
+          <button class="btn primary" id="btn-revelar">👁️ Revelar respuesta (Espacio)</button>
+        </div>
+        <div class="card-actions" id="card-actions-post" style="display:none">
+          <button class="btn danger" data-rating="0">❌ No sabía (1)</button>
+          <button class="btn warn" data-rating="1">🤔 Más o menos (2)</button>
+          <button class="btn success" data-rating="2">✅ Perfecto (3)</button>
+        </div>
+        <div class="card-actions" style="margin-top:8px;">
+          <button class="btn" id="btn-prev">← Anterior</button>
+          <button class="btn" id="btn-next">Siguiente →</button>
+          <button class="btn" id="btn-shuffle">🔀 Mezclar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="share-bar">
+      <button class="btn" id="btn-export">💾 Exportar mazo (JSON)</button>
+      <button class="btn" id="btn-import">📂 Importar mazo</button>
+      <button class="btn" id="btn-share-link">🔗 Copiar link compartible</button>
+      <button class="btn" id="btn-reset">🔄 Resetear progreso</button>
+      <input type="file" id="file-import" accept=".json" style="display:none">
+    </div>
+  </section>
+
+  <!-- EJERCICIOS -->
+  <section id="view-ejercicios" class="view">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="ej-total">0</div></div>
+      <div class="stat"><div class="stat-label">Intentados</div><div class="stat-value" id="ej-intentados">0</div></div>
+      <div class="stat"><div class="stat-label">Correctos</div><div class="stat-value" id="ej-correctos">0</div></div>
+      <div class="stat"><div class="stat-label">% Acierto</div><div class="stat-value" id="ej-pct">0%</div></div>
+    </div>
+
+    <div class="filters">
+      <span style="color:var(--text-dim);font-size:0.85rem;">Nivel:</span>
+      <div class="filter-group" id="ej-filter-nivel">
+        <button class="chip all active" data-nivel="todos">Todos</button>
+        <button class="chip basic" data-nivel="basico">Básico</button>
+        <button class="chip medium" data-nivel="medio">Medio</button>
+        <button class="chip expert" data-nivel="experto">Experto</button>
+      </div>
+    </div>
+
+    <div class="card-container">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-level" id="ej-level">—</span>
+          <span class="card-counter" id="ej-counter">0 / 0</span>
+        </div>
+        <div style="color:var(--text-dim);font-size:0.9rem;margin-bottom:10px;" id="ej-descripcion">—</div>
+        <pre class="sql" id="ej-sql">-- Cargando...</pre>
+        <div style="margin-top:14px;">
+          <input type="text" id="ej-input" placeholder="Escribe lo que va en el hueco ___"
+                 style="width:100%;padding:12px 14px;background:#0d1117;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:monospace;font-size:0.95rem;">
+        </div>
+        <div id="ej-feedback" style="margin-top:12px;display:none;"></div>
+        <div class="card-actions">
+          <button class="btn primary" id="ej-check">✓ Comprobar (Enter)</button>
+          <button class="btn" id="ej-hint">💡 Pista</button>
+          <button class="btn" id="ej-reveal">👁️ Ver respuesta</button>
+        </div>
+        <div class="card-actions" style="margin-top:8px;">
+          <button class="btn" id="ej-prev">← Anterior</button>
+          <button class="btn" id="ej-next">Siguiente →</button>
+          <button class="btn" id="ej-shuffle">🔀 Mezclar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONCEPTS DICTIONARY -->
+  <section id="view-conceptos" class="view">
+    <input type="text" class="dict-search" id="search-conceptos" placeholder="🔍 Buscar concepto (ej. JOIN, GROUP BY, HAVING...)">
+    <div class="dict-grid" id="grid-conceptos"></div>
+  </section>
+
+  <!-- CASES DICTIONARY -->
+  <section id="view-casos" class="view">
+    <input type="text" class="dict-search" id="search-casos" placeholder="🔍 Buscar caso (ej. paginación, ranking, duplicados...)">
+    <div class="dict-grid" id="grid-casos"></div>
+  </section>
+
+  <!-- HELP -->
+  <section id="view-ayuda" class="view">
+    <div class="dict-item" style="max-width:720px;margin:0 auto;">
+      <h4>Cómo funciona</h4>
+      <p style="margin:10px 0;">
+        <strong>SQLCards</strong> es una app de flashcards para aprender SQL reconociendo lo que hace cada consulta.
+        Ves la consulta, piensas qué hace, y pulsas <em>Revelar</em> para comprobar.
+      </p>
+      <h4 style="margin-top:16px;">Niveles</h4>
+      <ul style="margin:10px 0 10px 20px;color:var(--text-dim);">
+        <li><span style="color:var(--accent-2);font-weight:600;">Básico</span> — consultas sueltas, sin JOINs ni subconsultas.</li>
+        <li><span style="color:var(--warn);font-weight:600;">Medio</span> — JOINs (1-2), GROUP BY, HAVING, subconsultas simples.</li>
+        <li><span style="color:var(--danger);font-weight:600;">Experto</span> — CTEs, window functions, subconsultas correlacionadas, 3+ JOINs.</li>
+      </ul>
+      <h4 style="margin-top:16px;">Diccionarios</h4>
+      <ul style="margin:10px 0 10px 20px;color:var(--text-dim);">
+        <li><strong>Conceptos</strong> — glosario de cláusulas y funciones SQL individuales.</li>
+        <li><strong>Casos</strong> — problemas típicos de negocio con una o varias soluciones SQL.</li>
+      </ul>
+      <h4 style="margin-top:16px;">Atajos de teclado</h4>
+      <ul style="margin:10px 0 10px 20px;color:var(--text-dim);">
+        <li><kbd>Espacio</kbd> — revelar respuesta</li>
+        <li><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> — calificar</li>
+        <li><kbd>←</kbd> / <kbd>→</kbd> — navegar entre cartas</li>
+      </ul>
+      <h4 style="margin-top:16px;">Compartir</h4>
+      <p style="margin:10px 0;color:var(--text-dim);">
+        Como todo vive en un único archivo <code>index.html</code>, puedes enviarlo por correo, subirlo a GitHub Pages,
+        Netlify o Vercel, o compartir tu mazo personalizado con el botón "Copiar link compartible".
+      </p>
+    </div>
+  </section>
+</main>
+
+<script>
+// ============================================================
+// DICCIONARIO DE CONCEPTOS (individuales)
+// ============================================================
+const CONCEPTOS = [
+  { nombre: "SELECT", categoria: "DQL", def: "Recupera datos de una o más tablas. Es la sentencia más usada de SQL.", ejemplo: "SELECT nombre, edad FROM users;" },
+  { nombre: "WHERE", categoria: "Filtrado", def: "Filtra filas según una condición booleana. Se ejecuta ANTES de agrupar.", ejemplo: "SELECT * FROM users WHERE edad > 18;" },
+  { nombre: "ORDER BY", categoria: "Orden", def: "Ordena el resultado por una o más columnas. ASC por defecto, DESC para descendente.", ejemplo: "SELECT * FROM products ORDER BY price DESC;" },
+  { nombre: "LIMIT / OFFSET", categoria: "Paginación", def: "Restringe el número de filas devueltas. OFFSET salta filas al inicio.", ejemplo: "SELECT * FROM posts LIMIT 10 OFFSET 20;" },
+  { nombre: "DISTINCT", categoria: "Filtrado", def: "Elimina filas duplicadas del resultado.", ejemplo: "SELECT DISTINCT country FROM users;" },
+  { nombre: "INNER JOIN", categoria: "JOINs", def: "Une dos tablas devolviendo solo las filas con coincidencia en ambas.", ejemplo: "SELECT * FROM a INNER JOIN b ON a.id = b.a_id;" },
+  { nombre: "LEFT JOIN", categoria: "JOINs", def: "Devuelve todas las filas de la tabla izquierda, y las coincidentes de la derecha (NULL si no hay match).", ejemplo: "SELECT u.name, o.total FROM users u LEFT JOIN orders o ON u.id = o.user_id;" },
+  { nombre: "RIGHT JOIN", categoria: "JOINs", def: "Espejo de LEFT JOIN: todas las de la derecha, coincidencias de la izquierda.", ejemplo: "SELECT * FROM a RIGHT JOIN b ON a.id = b.a_id;" },
+  { nombre: "FULL OUTER JOIN", categoria: "JOINs", def: "Todas las filas de ambas tablas, con NULL donde no haya coincidencia.", ejemplo: "SELECT * FROM a FULL OUTER JOIN b ON a.id = b.a_id;" },
+  { nombre: "CROSS JOIN", categoria: "JOINs", def: "Producto cartesiano: cada fila de A con cada fila de B.", ejemplo: "SELECT * FROM sizes CROSS JOIN colors;" },
+  { nombre: "GROUP BY", categoria: "Agregación", def: "Agrupa filas que comparten valores en columnas indicadas, para aplicar funciones de agregación.", ejemplo: "SELECT country, COUNT(*) FROM users GROUP BY country;" },
+  { nombre: "HAVING", categoria: "Agregación", def: "Filtra grupos DESPUÉS del GROUP BY. WHERE filtra filas, HAVING filtra grupos.", ejemplo: "SELECT country, COUNT(*) c FROM users GROUP BY country HAVING c > 100;" },
+  { nombre: "COUNT / SUM / AVG / MIN / MAX", categoria: "Agregación", def: "Funciones de agregación. COUNT cuenta filas, SUM suma, AVG promedia, MIN/MAX extremos.", ejemplo: "SELECT AVG(price), MAX(price) FROM products;" },
+  { nombre: "Subconsulta", categoria: "Anidamiento", def: "Consulta dentro de otra. Puede ir en SELECT, FROM, WHERE. Correlacionada si depende de la externa.", ejemplo: "SELECT * FROM users WHERE id IN (SELECT user_id FROM orders);" },
+  { nombre: "EXISTS", categoria: "Anidamiento", def: "Devuelve TRUE si la subconsulta produce al menos una fila. Más eficiente que IN en muchos casos.", ejemplo: "SELECT * FROM users u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);" },
+  { nombre: "CTE (WITH)", categoria: "Estructura", def: "Common Table Expression: subconsulta con nombre, útil para legibilidad y recursión.", ejemplo: "WITH activos AS (SELECT * FROM users WHERE active) SELECT * FROM activos;" },
+  { nombre: "WITH RECURSIVE", categoria: "Estructura", def: "CTE que se referencia a sí misma. Para jerarquías, grafos, series generadas.", ejemplo: "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<5) SELECT * FROM n;" },
+  { nombre: "ROW_NUMBER()", categoria: "Ventana", def: "Asigna un número secuencial a cada fila dentro de una partición.", ejemplo: "SELECT name, ROW_NUMBER() OVER (ORDER BY score DESC) FROM players;" },
+  { nombre: "RANK() / DENSE_RANK()", categoria: "Ventana", def: "Ranking con empates. RANK deja huecos, DENSE_RANK no.", ejemplo: "SELECT name, RANK() OVER (ORDER BY score DESC) FROM players;" },
+  { nombre: "LAG() / LEAD()", categoria: "Ventana", def: "Acceden al valor de la fila anterior (LAG) o siguiente (LEAD) dentro de la partición.", ejemplo: "SELECT day, sales, LAG(sales) OVER (ORDER BY day) prev FROM daily;" },
+  { nombre: "PARTITION BY", categoria: "Ventana", def: "Divide el conjunto en particiones para que la función de ventana se aplique a cada una.", ejemplo: "SELECT dept, salary, AVG(salary) OVER (PARTITION BY dept) FROM emp;" },
+  { nombre: "CASE WHEN", categoria: "Condicional", def: "Lógica if/else dentro de SQL. Se puede usar en SELECT, WHERE, ORDER BY.", ejemplo: "SELECT name, CASE WHEN age<18 THEN 'menor' ELSE 'adulto' END FROM users;" },
+  { nombre: "COALESCE", categoria: "NULL", def: "Devuelve el primer argumento no NULL. Útil para dar valores por defecto.", ejemplo: "SELECT COALESCE(nickname, name, 'anónimo') FROM users;" },
+  { nombre: "NULLIF", categoria: "NULL", def: "Devuelve NULL si los dos argumentos son iguales, si no el primero. Útil para evitar división por cero.", ejemplo: "SELECT total / NULLIF(count, 0) FROM stats;" },
+  { nombre: "UNION / UNION ALL", categoria: "Conjuntos", def: "Combina resultados de dos SELECT. UNION elimina duplicados, UNION ALL los mantiene (más rápido).", ejemplo: "SELECT id FROM a UNION ALL SELECT id FROM b;" },
+  { nombre: "INTERSECT / EXCEPT", categoria: "Conjuntos", def: "INTERSECT: filas en ambas. EXCEPT: filas en la primera pero no en la segunda.", ejemplo: "SELECT id FROM a EXCEPT SELECT id FROM b;" },
+  { nombre: "IN / NOT IN", categoria: "Filtrado", def: "Comprueba si un valor está (o no) en una lista o subconsulta. Cuidado con NULL en NOT IN.", ejemplo: "SELECT * FROM users WHERE country IN ('ES','MX','AR');" },
+  { nombre: "BETWEEN", categoria: "Filtrado", def: "Rango inclusivo. `x BETWEEN a AND b` equivale a `x >= a AND x <= b`.", ejemplo: "SELECT * FROM orders WHERE total BETWEEN 100 AND 500;" },
+  { nombre: "LIKE / ILIKE", categoria: "Filtrado", def: "Coincidencia de patrón. % = cualquier cadena, _ = un carácter. ILIKE es case-insensitive.", ejemplo: "SELECT * FROM users WHERE email LIKE '%@gmail.com';" },
+  { nombre: "INSERT", categoria: "DML", def: "Inserta una o más filas en una tabla.", ejemplo: "INSERT INTO users (name, age) VALUES ('Ana', 30);" },
+  { nombre: "UPDATE", categoria: "DML", def: "Modifica filas existentes. SIEMPRE usar WHERE (salvo que quieras cambiar toda la tabla).", ejemplo: "UPDATE users SET active = false WHERE last_login < '2024-01-01';" },
+  { nombre: "DELETE", categoria: "DML", def: "Elimina filas. SIEMPRE usar WHERE. Considera soft-delete (columna deleted_at).", ejemplo: "DELETE FROM sessions WHERE expires_at < NOW();" },
+  { nombre: "CREATE TABLE", categoria: "DDL", def: "Crea una tabla con sus columnas, tipos y restricciones.", ejemplo: "CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT NOT NULL);" },
+  { nombre: "INDEX", categoria: "DDL", def: "Estructura auxiliar que acelera búsquedas por ciertas columnas a costa de escrituras más lentas.", ejemplo: "CREATE INDEX idx_users_email ON users(email);" },
+  { nombre: "PRIMARY KEY / FOREIGN KEY", categoria: "DDL", def: "PK identifica cada fila unívocamente. FK enlaza una columna a la PK de otra tabla.", ejemplo: "FOREIGN KEY (user_id) REFERENCES users(id)" },
+  { nombre: "UNIQUE", categoria: "DDL", def: "Restricción que impide valores duplicados en una columna o combinación de columnas.", ejemplo: "ALTER TABLE users ADD CONSTRAINT uq_email UNIQUE(email);" },
+  { nombre: "CHECK", categoria: "DDL", def: "Restricción que valida una condición booleana en cada fila.", ejemplo: "CHECK (age >= 0 AND age <= 150)" },
+  { nombre: "DEFAULT", categoria: "DDL", def: "Valor por defecto para una columna cuando no se especifica al insertar.", ejemplo: "created_at TIMESTAMP DEFAULT NOW()" },
+  { nombre: "ALTER TABLE", categoria: "DDL", def: "Modifica la estructura de una tabla existente: añadir/eliminar/cambiar columnas o restricciones.", ejemplo: "ALTER TABLE users ADD COLUMN phone TEXT;" },
+  { nombre: "DROP TABLE", categoria: "DDL", def: "Elimina una tabla completa. IF EXISTS evita error si no existe.", ejemplo: "DROP TABLE IF EXISTS temp_data;" },
+  { nombre: "TRUNCATE", categoria: "DDL", def: "Vacía una tabla mucho más rápido que DELETE, pero no se puede filtrar y suele no ser transaccional en todos los motores.", ejemplo: "TRUNCATE TABLE logs;" },
+  { nombre: "VIEW", categoria: "DDL", def: "Consulta guardada como tabla virtual. No almacena datos, se ejecuta al consultarla.", ejemplo: "CREATE VIEW usuarios_activos AS SELECT * FROM users WHERE active;" },
+  { nombre: "MATERIALIZED VIEW", categoria: "DDL", def: "Vista que sí guarda el resultado en disco. Se refresca manualmente con REFRESH. Útil para consultas pesadas.", ejemplo: "CREATE MATERIALIZED VIEW ventas_mes AS SELECT ...;" },
+  { nombre: "TRANSACTION (BEGIN/COMMIT/ROLLBACK)", categoria: "Transacción", def: "Bloque de sentencias atómico: o se aplican todas (COMMIT) o ninguna (ROLLBACK).", ejemplo: "BEGIN; UPDATE cuentas SET saldo = saldo - 100 WHERE id = 1; UPDATE cuentas SET saldo = saldo + 100 WHERE id = 2; COMMIT;" },
+  { nombre: "SAVEPOINT", categoria: "Transacción", def: "Marca dentro de una transacción a la que se puede volver con ROLLBACK TO SAVEPOINT.", ejemplo: "SAVEPOINT s1; ...; ROLLBACK TO s1;" },
+  { nombre: "UPSERT (INSERT ON CONFLICT)", categoria: "DML", def: "Inserta o actualiza si ya existe (por clave o restricción única). En Postgres: ON CONFLICT.", ejemplo: "INSERT INTO users(id,name) VALUES(1,'Ana') ON CONFLICT(id) DO UPDATE SET name = EXCLUDED.name;" },
+  { nombre: "MERGE", categoria: "DML", def: "Sentencia estándar que combina INSERT/UPDATE/DELETE según coincida o no con una fuente.", ejemplo: "MERGE INTO t USING s ON t.id=s.id WHEN MATCHED THEN UPDATE... WHEN NOT MATCHED THEN INSERT...;" },
+  { nombre: "RETURNING", categoria: "DML", def: "Devuelve columnas de las filas afectadas por INSERT/UPDATE/DELETE (Postgres).", ejemplo: "INSERT INTO users(name) VALUES('Ana') RETURNING id, created_at;" },
+  { nombre: "NTILE", categoria: "Ventana", def: "Divide las filas en N buckets del mismo tamaño (cuartiles, deciles, percentiles).", ejemplo: "SELECT name, NTILE(4) OVER (ORDER BY score) AS cuartil FROM alumnos;" },
+  { nombre: "FIRST_VALUE / LAST_VALUE / NTH_VALUE", categoria: "Ventana", def: "Devuelven el primer, último, o n-ésimo valor de la ventana según el orden.", ejemplo: "SELECT day, FIRST_VALUE(price) OVER (ORDER BY day) AS precio_inicial FROM p;" },
+  { nombre: "ROWS BETWEEN / RANGE BETWEEN", categoria: "Ventana", def: "Define el frame de la ventana. ROWS por posición física, RANGE por valores.", ejemplo: "SUM(x) OVER (ORDER BY d ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)" },
+  { nombre: "LATERAL", categoria: "Anidamiento", def: "Permite que una subconsulta en FROM referencie columnas de tablas anteriores. Ideal para 'para cada fila, calcula...'.", ejemplo: "SELECT u.*, x.* FROM users u, LATERAL (SELECT * FROM orders o WHERE o.user_id=u.id ORDER BY total DESC LIMIT 3) x;" },
+  { nombre: "GROUPING SETS / ROLLUP / CUBE", categoria: "Agregación", def: "Agrupan por múltiples combinaciones en una sola consulta. ROLLUP añade subtotales, CUBE todas las combinaciones.", ejemplo: "SELECT country, city, SUM(sales) FROM s GROUP BY ROLLUP(country, city);" },
+  { nombre: "STRING_AGG / GROUP_CONCAT", categoria: "Agregación", def: "Concatena valores de un grupo en un único string con separador.", ejemplo: "SELECT dept, STRING_AGG(name, ', ') FROM emp GROUP BY dept;" },
+  { nombre: "ARRAY_AGG", categoria: "Agregación", def: "Agrega los valores de un grupo en un array.", ejemplo: "SELECT user_id, ARRAY_AGG(tag) FROM tags GROUP BY user_id;" },
+  { nombre: "PERCENTILE_CONT / PERCENTILE_DISC", categoria: "Agregación", def: "Calcula percentiles (mediana = 0.5). CONT interpola, DISC devuelve un valor existente.", ejemplo: "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) FROM emp;" },
+  { nombre: "GENERATE_SERIES", categoria: "Utilidad", def: "Función que genera series de números o fechas. Muy útil para rellenar huecos.", ejemplo: "SELECT * FROM generate_series('2026-01-01'::date, '2026-12-31', '1 day');" },
+  { nombre: "EXTRACT / DATE_TRUNC", categoria: "Fechas", def: "EXTRACT saca una parte de una fecha (año, mes, día, dow). DATE_TRUNC redondea a la unidad indicada.", ejemplo: "SELECT EXTRACT(YEAR FROM created_at), DATE_TRUNC('month', created_at) FROM orders;" },
+  { nombre: "INTERVAL", categoria: "Fechas", def: "Tipo que representa duraciones. Se suma/resta a fechas y timestamps.", ejemplo: "SELECT NOW() - INTERVAL '7 days';" },
+  { nombre: "CAST / ::", categoria: "Tipos", def: "Convierte un valor a otro tipo. CAST es estándar; :: es el atajo de Postgres.", ejemplo: "SELECT '2026-01-01'::date, CAST('42' AS INT);" },
+  { nombre: "JSON / JSONB (Postgres)", categoria: "JSON", def: "Tipos para datos JSON. Operadores: -> devuelve JSON, ->> devuelve texto, @> contiene.", ejemplo: "SELECT data->>'name' FROM eventos WHERE data @> '{\"type\":\"click\"}';" },
+  { nombre: "Arrays (Postgres)", categoria: "Arrays", def: "Tipo columna array: text[], int[]. Operadores: ANY, ALL, @> (contiene), && (solapa).", ejemplo: "SELECT * FROM posts WHERE 'sql' = ANY(tags);" },
+  { nombre: "Full-Text Search (Postgres)", categoria: "Búsqueda", def: "tsvector guarda tokens indexables, tsquery la búsqueda. El operador @@ los enlaza.", ejemplo: "SELECT * FROM docs WHERE to_tsvector(body) @@ to_tsquery('sql & experto');" },
+  { nombre: "EXPLAIN / EXPLAIN ANALYZE", categoria: "Rendimiento", def: "Muestra el plan de ejecución. ANALYZE lo ejecuta realmente y muestra tiempos y filas reales.", ejemplo: "EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42;" },
+  { nombre: "Índice compuesto / parcial", categoria: "Rendimiento", def: "Índice sobre varias columnas (importa el orden) o solo sobre filas que cumplen una condición.", ejemplo: "CREATE INDEX idx_active_email ON users(email) WHERE active;" },
+  { nombre: "Niveles de aislamiento", categoria: "Transacción", def: "READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, SERIALIZABLE. Definen qué anomalías se permiten entre transacciones concurrentes.", ejemplo: "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;" },
+];
+
+// ============================================================
+// DICCIONARIO DE CASOS (problemas de negocio con soluciones)
+// ============================================================
+const CASOS = [
+  {
+    problema: "Obtener el top N de registros por grupo",
+    descripcion: "Por ejemplo, los 3 productos más vendidos por cada categoría.",
+    soluciones: [
+      {
+        titulo: "Con window function (recomendado)",
+        sql: `SELECT category, name, sales
+FROM (
+  SELECT category, name, sales,
+         ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales DESC) rn
+  FROM products
+) t
+WHERE rn <= 3;`,
+        nota: "Eficiente y claro. Usa ROW_NUMBER para numerar dentro de cada categoría."
+      },
+      {
+        titulo: "Con subconsulta correlacionada (portable pero lento)",
+        sql: `SELECT p.category, p.name, p.sales
+FROM products p
+WHERE (SELECT COUNT(*) FROM products p2
+       WHERE p2.category = p.category AND p2.sales > p.sales) < 3;`,
+        nota: "Funciona en cualquier motor pero escala mal."
+      }
+    ]
+  },
+  {
+    problema: "Detectar filas duplicadas",
+    descripcion: "Encontrar registros con el mismo email, teléfono, etc.",
+    soluciones: [
+      {
+        titulo: "Con GROUP BY + HAVING",
+        sql: `SELECT email, COUNT(*) AS veces
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;`,
+        nota: "Devuelve qué valores están duplicados y cuántas veces."
+      },
+      {
+        titulo: "Con window function (ver todas las filas duplicadas)",
+        sql: `SELECT *
+FROM (
+  SELECT *, COUNT(*) OVER (PARTITION BY email) c
+  FROM users
+) t
+WHERE c > 1;`,
+        nota: "Útil si necesitas ver las filas completas, no solo el valor duplicado."
+      }
+    ]
+  },
+  {
+    problema: "Paginación eficiente (keyset pagination)",
+    descripcion: "Evitar OFFSET grande, que degrada rendimiento en tablas enormes.",
+    soluciones: [
+      {
+        titulo: "Con OFFSET (simple pero lento en offsets grandes)",
+        sql: `SELECT * FROM posts
+ORDER BY created_at DESC
+LIMIT 20 OFFSET 10000;`,
+        nota: "Fácil pero el motor debe recorrer 10020 filas."
+      },
+      {
+        titulo: "Con keyset / cursor (rápido siempre)",
+        sql: `SELECT * FROM posts
+WHERE created_at < '2026-09-01 10:00:00'
+ORDER BY created_at DESC
+LIMIT 20;`,
+        nota: "Se pasa como cursor la fecha de la última fila de la página anterior."
+      }
+    ]
+  },
+  {
+    problema: "Calcular acumulado (running total)",
+    descripcion: "Ventas acumuladas día a día, saldo bancario, etc.",
+    soluciones: [
+      {
+        titulo: "Con SUM() OVER",
+        sql: `SELECT day, sales,
+       SUM(sales) OVER (ORDER BY day
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS acumulado
+FROM daily_sales;`,
+        nota: "Estándar y eficiente."
+      }
+    ]
+  },
+  {
+    problema: "Diferencia entre filas consecutivas",
+    descripcion: "Cambio diario de precio, tiempo entre eventos, etc.",
+    soluciones: [
+      {
+        titulo: "Con LAG()",
+        sql: `SELECT day, price,
+       price - LAG(price) OVER (ORDER BY day) AS cambio
+FROM prices;`,
+        nota: "LAG accede al valor de la fila anterior en la partición/orden dado."
+      }
+    ]
+  },
+  {
+    problema: "Pivotar filas a columnas",
+    descripcion: "Convertir una columna categórica en varias columnas (ej. ventas por mes en columnas).",
+    soluciones: [
+      {
+        titulo: "Con CASE + SUM (portable)",
+        sql: `SELECT product,
+  SUM(CASE WHEN month = 1 THEN qty ELSE 0 END) AS enero,
+  SUM(CASE WHEN month = 2 THEN qty ELSE 0 END) AS febrero,
+  SUM(CASE WHEN month = 3 THEN qty ELSE 0 END) AS marzo
+FROM sales
+GROUP BY product;`,
+        nota: "Truco universal cuando no hay PIVOT nativo."
+      }
+    ]
+  },
+  {
+    problema: "Recorrer una jerarquía (árbol de categorías, empleados/jefes)",
+    descripcion: "Obtener todos los descendientes de un nodo en una estructura padre/hijo.",
+    soluciones: [
+      {
+        titulo: "Con CTE recursivo",
+        sql: `WITH RECURSIVE arbol AS (
+  SELECT id, name, parent_id FROM categories WHERE id = 1
+  UNION ALL
+  SELECT c.id, c.name, c.parent_id
+  FROM categories c JOIN arbol a ON c.parent_id = a.id
+)
+SELECT * FROM arbol;`,
+        nota: "El caso base es la raíz; el recursivo une los hijos hasta agotar."
+      }
+    ]
+  },
+  {
+    problema: "Encontrar registros sin coincidencia en otra tabla",
+    descripcion: "Usuarios que nunca compraron, productos sin ventas, etc.",
+    soluciones: [
+      {
+        titulo: "Con LEFT JOIN + IS NULL",
+        sql: `SELECT u.*
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+WHERE o.id IS NULL;`,
+        nota: "Patrón clásico anti-join. Muy legible."
+      },
+      {
+        titulo: "Con NOT EXISTS",
+        sql: `SELECT u.*
+FROM users u
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o WHERE o.user_id = u.id
+);`,
+        nota: "A menudo más rápido y seguro con NULLs."
+      }
+    ]
+  },
+  {
+    problema: "Contar y agrupar con múltiples condiciones",
+    descripcion: "Cuántos usuarios activos, inactivos y bloqueados hay por país.",
+    soluciones: [
+      {
+        titulo: "Con FILTER (Postgres) o CASE + SUM",
+        sql: `SELECT country,
+  COUNT(*) FILTER (WHERE status = 'active')   AS activos,
+  COUNT(*) FILTER (WHERE status = 'inactive') AS inactivos,
+  COUNT(*) FILTER (WHERE status = 'banned')   AS bloqueados
+FROM users
+GROUP BY country;`,
+        nota: "FILTER es más limpio que CASE cuando el motor lo soporta."
+      }
+    ]
+  },
+  {
+    problema: "Sesiones de usuario (agrupar eventos separados por tiempo)",
+    descripcion: "Marcar como nueva sesión cuando pasan >30 min entre eventos.",
+    soluciones: [
+      {
+        titulo: "Con LAG + SUM window",
+        sql: `WITH marcados AS (
+  SELECT user_id, ts,
+    CASE WHEN ts - LAG(ts) OVER (PARTITION BY user_id ORDER BY ts)
+              > INTERVAL '30 minutes' THEN 1 ELSE 0 END AS nueva
+  FROM events
+)
+SELECT user_id, ts,
+  SUM(nueva) OVER (PARTITION BY user_id ORDER BY ts) AS sesion_id
+FROM marcados;`,
+        nota: "Técnica clásica de sessionización con window functions."
+      }
+    ]
+  },
+];
+
+// ============================================================
+// CARTAS (consultas SQL — el nivel se calcula automáticamente)
+// ============================================================
+const RAW_CARDS = [
+  // --- BÁSICAS ---
+  { sql: `SELECT * FROM users;`,
+    titulo: "Selecciona todas las columnas y filas de la tabla users.",
+    explicacion: "El asterisco * devuelve todas las columnas. Sin WHERE, devuelve todas las filas. Útil para explorar, pero evita * en producción por rendimiento y claridad.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT name, email FROM users WHERE active = true;`,
+    titulo: "Nombres y emails de los usuarios activos.",
+    explicacion: "Proyecta solo dos columnas y filtra por la condición booleana active = true. En algunos motores basta con WHERE active.",
+    conceptos: ["SELECT", "WHERE"] },
+
+  { sql: `SELECT DISTINCT country FROM users;`,
+    titulo: "Lista de países únicos donde hay usuarios.",
+    explicacion: "DISTINCT elimina duplicados. Devuelve cada país una sola vez, sin importar cuántos usuarios haya de ese país.",
+    conceptos: ["SELECT", "DISTINCT"] },
+
+  { sql: `SELECT * FROM products ORDER BY price DESC LIMIT 10;`,
+    titulo: "Los 10 productos más caros.",
+    explicacion: "Ordena por price descendente y toma solo los primeros 10 resultados. Combinación típica para 'top N'.",
+    conceptos: ["SELECT", "ORDER BY", "LIMIT / OFFSET"] },
+
+  { sql: `SELECT COUNT(*) FROM orders WHERE created_at >= '2026-01-01';`,
+    titulo: "Cuántos pedidos hay desde el 1 de enero de 2026.",
+    explicacion: "COUNT(*) cuenta filas. El WHERE filtra por fecha usando comparación de strings/fechas (el motor las convierte).",
+    conceptos: ["SELECT", "WHERE", "COUNT / SUM / AVG / MIN / MAX"] },
+
+  { sql: `INSERT INTO users (name, email, age) VALUES ('Ana', 'ana@mail.com', 28);`,
+    titulo: "Inserta un nuevo usuario en la tabla users.",
+    explicacion: "INSERT INTO tabla (cols) VALUES (vals). Las columnas no listadas toman su valor por defecto o NULL.",
+    conceptos: ["INSERT"] },
+
+  { sql: `UPDATE users SET active = false WHERE last_login < '2025-01-01';`,
+    titulo: "Marca como inactivos a los usuarios que no entran desde 2025.",
+    explicacion: "UPDATE modifica filas existentes. El WHERE es crítico: sin él, actualizaría TODA la tabla.",
+    conceptos: ["UPDATE", "WHERE"] },
+
+  { sql: `DELETE FROM sessions WHERE expires_at < NOW();`,
+    titulo: "Elimina las sesiones expiradas.",
+    explicacion: "DELETE con WHERE quita solo las filas que cumplen la condición. NOW() devuelve la fecha/hora actual.",
+    conceptos: ["DELETE"] },
+
+  { sql: `SELECT * FROM users WHERE email LIKE '%@gmail.com';`,
+    titulo: "Todos los usuarios con email de Gmail.",
+    explicacion: "LIKE compara patrones. % significa 'cualquier cadena'. Aquí busca emails que terminen en @gmail.com.",
+    conceptos: ["LIKE / ILIKE"] },
+
+  { sql: `SELECT * FROM orders WHERE total BETWEEN 100 AND 500;`,
+    titulo: "Pedidos con total entre 100 y 500 (ambos inclusive).",
+    explicacion: "BETWEEN es un rango inclusivo, equivalente a total >= 100 AND total <= 500.",
+    conceptos: ["BETWEEN"] },
+
+  // --- MEDIAS ---
+  { sql: `SELECT u.name, COUNT(o.id) AS total_pedidos
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.name;`,
+    titulo: "Cuántos pedidos ha hecho cada usuario (incluyendo los que no han hecho ninguno).",
+    explicacion: "LEFT JOIN incluye usuarios sin pedidos (COUNT devolvería 0 para ellos porque cuenta o.id, no *). El GROUP BY agrupa por nombre para agregar.",
+    conceptos: ["LEFT JOIN", "GROUP BY", "COUNT / SUM / AVG / MIN / MAX"] },
+
+  { sql: `SELECT country, COUNT(*) AS n
+FROM users
+GROUP BY country
+HAVING COUNT(*) > 100;`,
+    titulo: "Países con más de 100 usuarios registrados.",
+    explicacion: "GROUP BY agrupa por país. HAVING filtra grupos (no filas: eso sería WHERE). Solo aparecen países con más de 100 usuarios.",
+    conceptos: ["GROUP BY", "HAVING"] },
+
+  { sql: `SELECT * FROM users
+WHERE id IN (SELECT user_id FROM orders WHERE total > 1000);`,
+    titulo: "Usuarios que han hecho al menos un pedido de más de 1000.",
+    explicacion: "Subconsulta en el WHERE: primero obtiene los user_id con pedidos grandes, luego selecciona esos usuarios de la tabla users.",
+    conceptos: ["Subconsulta", "IN / NOT IN"] },
+
+  { sql: `SELECT p.name, c.name AS categoria
+FROM products p
+INNER JOIN categories c ON c.id = p.category_id
+WHERE p.stock > 0;`,
+    titulo: "Productos con stock, mostrando su nombre de categoría.",
+    explicacion: "INNER JOIN une productos y categorías por su clave. Solo aparecen productos con categoría existente y stock > 0.",
+    conceptos: ["INNER JOIN", "WHERE"] },
+
+  { sql: `SELECT category, AVG(price) AS precio_medio, MAX(price) AS max_precio
+FROM products
+GROUP BY category
+ORDER BY precio_medio DESC;`,
+    titulo: "Precio medio y máximo por categoría, ordenado del más caro al más barato.",
+    explicacion: "AVG y MAX son funciones de agregación. GROUP BY agrupa por categoría; ORDER BY ordena el resultado final.",
+    conceptos: ["GROUP BY", "COUNT / SUM / AVG / MIN / MAX", "ORDER BY"] },
+
+  { sql: `SELECT name,
+       CASE
+         WHEN age < 18 THEN 'menor'
+         WHEN age < 65 THEN 'adulto'
+         ELSE 'senior'
+       END AS grupo_edad
+FROM users;`,
+    titulo: "Clasifica cada usuario en 'menor', 'adulto' o 'senior' según su edad.",
+    explicacion: "CASE WHEN es el if/else de SQL. Devuelve el primer valor cuya condición se cumpla, o ELSE si ninguna.",
+    conceptos: ["CASE WHEN"] },
+
+  { sql: `SELECT u.*
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+WHERE o.id IS NULL;`,
+    titulo: "Usuarios que nunca han hecho un pedido.",
+    explicacion: "Patrón anti-join: LEFT JOIN trae los usuarios; WHERE o.id IS NULL se queda solo con los que NO tuvieron match en orders.",
+    conceptos: ["LEFT JOIN", "WHERE"] },
+
+  { sql: `SELECT id FROM active_users
+UNION
+SELECT id FROM premium_users;`,
+    titulo: "IDs únicos que están en cualquiera de las dos tablas (sin duplicar).",
+    explicacion: "UNION combina resultados de dos SELECT y elimina duplicados. Si quisiéramos mantenerlos, sería UNION ALL (más rápido).",
+    conceptos: ["UNION / UNION ALL"] },
+
+  { sql: `SELECT COALESCE(nickname, name, 'anónimo') AS mostrar
+FROM users;`,
+    titulo: "Muestra el nickname; si es NULL, el nombre; si también, 'anónimo'.",
+    explicacion: "COALESCE devuelve el primer argumento no NULL. Útil para dar valores por defecto en cascada.",
+    conceptos: ["COALESCE"] },
+
+  // --- EXPERTAS ---
+  { sql: `SELECT name, department, salary,
+       RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rank_dep
+FROM employees;`,
+    titulo: "Ranking de salarios dentro de cada departamento.",
+    explicacion: "RANK() OVER (...) es una window function. PARTITION BY reinicia el ranking por departamento; ORDER BY define el criterio. Los empates comparten posición.",
+    conceptos: ["RANK() / DENSE_RANK()", "PARTITION BY"] },
+
+  { sql: `WITH ventas_mes AS (
+  SELECT DATE_TRUNC('month', created_at) AS mes, SUM(total) AS ventas
+  FROM orders
+  GROUP BY 1
+)
+SELECT mes, ventas,
+       ventas - LAG(ventas) OVER (ORDER BY mes) AS diferencia_vs_mes_anterior
+FROM ventas_mes;`,
+    titulo: "Ventas mensuales y su diferencia respecto al mes anterior.",
+    explicacion: "CTE que calcula ventas por mes. LAG() accede al valor de la fila anterior (mes previo) para calcular la diferencia.",
+    conceptos: ["CTE (WITH)", "LAG() / LEAD()", "GROUP BY"] },
+
+  { sql: `SELECT category, name, sales
+FROM (
+  SELECT category, name, sales,
+         ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales DESC) rn
+  FROM products
+) t
+WHERE rn <= 3;`,
+    titulo: "Los 3 productos más vendidos de cada categoría.",
+    explicacion: "Subconsulta que numera productos dentro de cada categoría por ventas descendentes. El WHERE externo se queda con los 3 primeros de cada grupo.",
+    conceptos: ["ROW_NUMBER()", "PARTITION BY", "Subconsulta"] },
+
+  { sql: `SELECT day, sales,
+       SUM(sales) OVER (ORDER BY day
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS acumulado
+FROM daily_sales;`,
+    titulo: "Ventas diarias con acumulado (running total).",
+    explicacion: "SUM() OVER con ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW suma desde el inicio hasta la fila actual: el clásico running total.",
+    conceptos: ["COUNT / SUM / AVG / MIN / MAX", "PARTITION BY"] },
+
+  { sql: `WITH RECURSIVE org AS (
+  SELECT id, name, manager_id, 1 AS nivel
+  FROM employees WHERE manager_id IS NULL
+  UNION ALL
+  SELECT e.id, e.name, e.manager_id, o.nivel + 1
+  FROM employees e JOIN org o ON e.manager_id = o.id
+)
+SELECT * FROM org ORDER BY nivel, name;`,
+    titulo: "Recorre la jerarquía de empleados desde el CEO hacia abajo, calculando el nivel.",
+    explicacion: "CTE recursivo: caso base = empleados sin jefe (raíces). Paso recursivo = añadir empleados cuyo jefe ya está en la CTE, subiendo el nivel.",
+    conceptos: ["WITH RECURSIVE", "CTE (WITH)"] },
+
+  { sql: `SELECT u.name
+FROM users u
+WHERE EXISTS (
+  SELECT 1 FROM orders o
+  WHERE o.user_id = u.id AND o.total > 500
+);`,
+    titulo: "Usuarios con al menos un pedido de más de 500.",
+    explicacion: "EXISTS con subconsulta correlacionada (usa u.id de la externa). Devuelve TRUE en cuanto encuentra una fila; suele ser más rápido que IN.",
+    conceptos: ["EXISTS", "Subconsulta"] },
+
+  { sql: `SELECT country,
+  COUNT(*) FILTER (WHERE status = 'active')   AS activos,
+  COUNT(*) FILTER (WHERE status = 'inactive') AS inactivos,
+  COUNT(*) FILTER (WHERE status = 'banned')   AS bloqueados
+FROM users
+GROUP BY country;`,
+    titulo: "Conteo de usuarios por estado, agrupado por país (formato pivot).",
+    explicacion: "COUNT(*) FILTER (WHERE ...) (Postgres) cuenta solo las filas que cumplen la condición dentro del grupo. Equivalente a SUM(CASE WHEN ... THEN 1 ELSE 0 END).",
+    conceptos: ["GROUP BY", "COUNT / SUM / AVG / MIN / MAX", "CASE WHEN"] },
+
+  { sql: `SELECT p.name, p.price
+FROM products p
+WHERE p.price > (
+  SELECT AVG(price) FROM products WHERE category_id = p.category_id
+);`,
+    titulo: "Productos que están por encima del precio medio de su propia categoría.",
+    explicacion: "Subconsulta correlacionada: por cada producto, calcula el AVG solo de su categoría (referencia p.category_id de la externa) y filtra los que superan ese promedio.",
+    conceptos: ["Subconsulta", "COUNT / SUM / AVG / MIN / MAX"] },
+
+  { sql: `WITH marcados AS (
+  SELECT user_id, ts,
+    CASE WHEN ts - LAG(ts) OVER (PARTITION BY user_id ORDER BY ts)
+              > INTERVAL '30 minutes' THEN 1 ELSE 0 END AS nueva
+  FROM events
+)
+SELECT user_id, ts,
+  SUM(nueva) OVER (PARTITION BY user_id ORDER BY ts) AS sesion_id
+FROM marcados;`,
+    titulo: "Agrupa eventos en sesiones: nueva sesión si pasan >30 min desde el evento anterior.",
+    explicacion: "Técnica clásica de sesionización. LAG mira el timestamp previo; el CASE marca 1 cuando se rompe la sesión; SUM acumulada actúa como ID incremental de sesión por usuario.",
+    conceptos: ["CTE (WITH)", "LAG() / LEAD()", "CASE WHEN", "PARTITION BY"] },
+
+  // --- MÁS BÁSICAS ---
+  { sql: `SELECT id, name AS nombre, email AS correo FROM users;`,
+    titulo: "Selecciona columnas renombrándolas con alias.",
+    explicacion: "AS asigna alias a columnas. Cambia solo el nombre en el resultado, no en la tabla. En muchos motores AS es opcional.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT * FROM users WHERE age >= 18 AND country = 'ES';`,
+    titulo: "Usuarios españoles mayores de edad.",
+    explicacion: "AND exige que se cumplan ambas condiciones. Se puede combinar con OR y NOT usando paréntesis.",
+    conceptos: ["WHERE"] },
+
+  { sql: `SELECT * FROM users WHERE email IS NULL;`,
+    titulo: "Usuarios que no tienen email registrado.",
+    explicacion: "NULL no se compara con =. Siempre se usa IS NULL o IS NOT NULL para verificar ausencia de valor.",
+    conceptos: ["WHERE"] },
+
+  { sql: `SELECT * FROM users WHERE country IN ('ES','MX','AR','CO');`,
+    titulo: "Usuarios de países hispanohablantes seleccionados.",
+    explicacion: "IN es azúcar sintáctico para múltiples OR. Más legible que country='ES' OR country='MX' OR ...",
+    conceptos: ["IN / NOT IN"] },
+
+  { sql: `SELECT * FROM users WHERE country NOT IN ('ES','MX');`,
+    titulo: "Usuarios que NO son de España ni México.",
+    explicacion: "Cuidado con NOT IN si la lista puede contener NULL: en ese caso devuelve 0 filas. Usar NOT EXISTS o filtrar los NULL antes.",
+    conceptos: ["IN / NOT IN"] },
+
+  { sql: `SELECT * FROM orders
+ORDER BY priority DESC, created_at ASC;`,
+    titulo: "Pedidos ordenados por prioridad descendente y, en empate, por fecha ascendente.",
+    explicacion: "ORDER BY acepta múltiples columnas. El segundo criterio solo se aplica cuando el primero empata.",
+    conceptos: ["ORDER BY"] },
+
+  { sql: `SELECT * FROM users ORDER BY last_login DESC NULLS LAST;`,
+    titulo: "Usuarios por último login, poniendo los que nunca entraron al final.",
+    explicacion: "NULLS FIRST / NULLS LAST controlan dónde van los NULLs al ordenar. Por defecto los NULL van al final en ASC y al inicio en DESC (Postgres).",
+    conceptos: ["ORDER BY"] },
+
+  { sql: `SELECT CONCAT(first_name, ' ', last_name) AS nombre_completo
+FROM users;`,
+    titulo: "Combina nombre y apellido en una sola columna.",
+    explicacion: "CONCAT une strings. En Postgres también puedes usar el operador || : first_name || ' ' || last_name.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT UPPER(name), LOWER(email), LENGTH(name) FROM users;`,
+    titulo: "Aplica funciones de string: mayúsculas, minúsculas y longitud.",
+    explicacion: "UPPER/LOWER cambian caja. LENGTH devuelve caracteres. Útiles para normalizar datos y validar.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT SUBSTRING(email FROM 1 FOR POSITION('@' IN email) - 1) AS usuario
+FROM users;`,
+    titulo: "Extrae la parte del email antes de la arroba.",
+    explicacion: "SUBSTRING extrae una subcadena. POSITION encuentra la posición del '@'. Combinadas obtienes el 'nombre de usuario' del email.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT TRIM(name), REPLACE(phone, '-', '') FROM users;`,
+    titulo: "Limpia espacios sobrantes y quita guiones del teléfono.",
+    explicacion: "TRIM elimina espacios (o el carácter indicado) de ambos lados. REPLACE sustituye todas las ocurrencias de un texto por otro.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT NOW(), CURRENT_DATE, CURRENT_TIME;`,
+    titulo: "Obtiene la fecha y hora actuales del servidor.",
+    explicacion: "NOW() devuelve timestamp con hora. CURRENT_DATE solo la fecha. CURRENT_TIME solo la hora. Todas se basan en la zona horaria del servidor.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT * FROM orders
+WHERE created_at >= NOW() - INTERVAL '7 days';`,
+    titulo: "Pedidos de los últimos 7 días.",
+    explicacion: "INTERVAL representa una duración. Se puede sumar o restar a fechas. NOW() - INTERVAL '7 days' = hace una semana.",
+    conceptos: ["INTERVAL", "WHERE"] },
+
+  { sql: `SELECT EXTRACT(YEAR FROM created_at) AS anio,
+       EXTRACT(MONTH FROM created_at) AS mes,
+       COUNT(*)
+FROM orders
+GROUP BY 1, 2
+ORDER BY 1, 2;`,
+    titulo: "Cuenta pedidos por año y mes.",
+    explicacion: "EXTRACT saca un componente de una fecha. GROUP BY 1,2 agrupa por las dos primeras columnas del SELECT (atajo posicional).",
+    conceptos: ["EXTRACT / DATE_TRUNC", "GROUP BY"] },
+
+  { sql: `SELECT ROUND(price, 2), CEIL(price), FLOOR(price), ABS(discount)
+FROM products;`,
+    titulo: "Aplica funciones matemáticas: redondeo, techo, suelo y valor absoluto.",
+    explicacion: "ROUND(x, n) redondea a n decimales. CEIL redondea hacia arriba, FLOOR hacia abajo. ABS quita el signo.",
+    conceptos: ["SELECT"] },
+
+  { sql: `SELECT '42'::INT, '2026-01-01'::DATE, price::TEXT
+FROM products;`,
+    titulo: "Convierte valores entre tipos usando el operador ::.",
+    explicacion: ":: es el atajo de Postgres para CAST. Equivale a CAST('42' AS INT). Útil para convertir strings a números/fechas y viceversa.",
+    conceptos: ["CAST / ::"] },
+
+  { sql: `INSERT INTO users (name, email)
+VALUES ('Ana', 'ana@x.com'),
+       ('Luis', 'luis@x.com'),
+       ('Eva', 'eva@x.com');`,
+    titulo: "Inserta varias filas en una sola sentencia.",
+    explicacion: "Un solo INSERT con múltiples tuplas VALUES es más rápido que varios INSERT sueltos: menos overhead de red y transacción.",
+    conceptos: ["INSERT"] },
+
+  { sql: `INSERT INTO users_backup (id, name, email)
+SELECT id, name, email FROM users WHERE active = false;`,
+    titulo: "Copia usuarios inactivos a una tabla de respaldo.",
+    explicacion: "INSERT ... SELECT combina inserción con consulta: inserta las filas devueltas por el SELECT. Muy usado para migraciones y snapshots.",
+    conceptos: ["INSERT", "SELECT"] },
+
+  { sql: `TRUNCATE TABLE logs;`,
+    titulo: "Vacía por completo la tabla logs.",
+    explicacion: "TRUNCATE elimina todas las filas de golpe, mucho más rápido que DELETE. No admite WHERE. Cuidado: en algunos motores no se puede revertir.",
+    conceptos: ["TRUNCATE"] },
+
+  { sql: `CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  age INT CHECK (age >= 0),
+  created_at TIMESTAMP DEFAULT NOW()
+);`,
+    titulo: "Crea la tabla users con clave primaria, unicidad, NOT NULL, CHECK y DEFAULT.",
+    explicacion: "Ejemplo completo de CREATE TABLE con las restricciones más comunes. SERIAL genera un entero autoincremental; PRIMARY KEY crea índice único; DEFAULT NOW() rellena la fecha automáticamente.",
+    conceptos: ["CREATE TABLE", "PRIMARY KEY / FOREIGN KEY", "UNIQUE", "CHECK", "DEFAULT"] },
+
+  { sql: `ALTER TABLE users
+  ADD COLUMN phone TEXT,
+  ADD COLUMN verified BOOLEAN DEFAULT false;`,
+    titulo: "Añade dos columnas nuevas a la tabla users.",
+    explicacion: "ALTER TABLE modifica la estructura. Se pueden combinar varias operaciones en una sola sentencia separadas por comas.",
+    conceptos: ["ALTER TABLE"] },
+
+  { sql: `DROP TABLE IF EXISTS temp_data CASCADE;`,
+    titulo: "Elimina la tabla temp_data si existe, junto con sus dependencias.",
+    explicacion: "IF EXISTS evita error si no existe. CASCADE elimina también objetos que dependen de ella (vistas, FKs). Usar con cuidado.",
+    conceptos: ["DROP TABLE"] },
+
+  { sql: `CREATE INDEX idx_orders_user_created
+ON orders (user_id, created_at DESC);`,
+    titulo: "Crea un índice compuesto sobre user_id y created_at descendente.",
+    explicacion: "Acelera consultas que filtran por user_id y ordenan por created_at. El orden de columnas en el índice importa: sirve para filtros por user_id, pero no solo por created_at.",
+    conceptos: ["INDEX", "Índice compuesto / parcial"] },
+
+  // --- MÁS MEDIAS ---
+  { sql: `SELECT a.name, b.name AS jefe
+FROM employees a
+LEFT JOIN employees b ON b.id = a.manager_id;`,
+    titulo: "Muestra cada empleado con el nombre de su jefe (self-join).",
+    explicacion: "Self-join: se une la tabla consigo misma usando alias distintos. Cada empleado se enlaza con el jefe que apunta su manager_id.",
+    conceptos: ["LEFT JOIN"] },
+
+  { sql: `SELECT u.name, o.total
+FROM users u
+INNER JOIN orders o USING (user_id);`,
+    titulo: "Une users y orders por la columna user_id (sintaxis USING).",
+    explicacion: "USING(col) es equivalente a ON u.col = o.col cuando la columna se llama igual en ambas tablas. Más corto y evita duplicar la columna.",
+    conceptos: ["INNER JOIN"] },
+
+  { sql: `SELECT u.name, c.name AS ciudad, co.name AS pais
+FROM users u
+JOIN cities c ON c.id = u.city_id
+JOIN countries co ON co.id = c.country_id;`,
+    titulo: "Une usuarios con su ciudad y país (tres tablas).",
+    explicacion: "Los JOINs se encadenan. Cada JOIN añade una tabla al conjunto. Aquí se navega usuarios → ciudades → países.",
+    conceptos: ["INNER JOIN"] },
+
+  { sql: `SELECT COUNT(DISTINCT user_id) AS clientes_unicos
+FROM orders;`,
+    titulo: "Número de clientes distintos que han hecho pedidos.",
+    explicacion: "COUNT(DISTINCT col) cuenta solo valores únicos. Sin DISTINCT contaría todas las filas (un cliente con 5 pedidos contaría 5 veces).",
+    conceptos: ["COUNT / SUM / AVG / MIN / MAX", "DISTINCT"] },
+
+  { sql: `SELECT department,
+       STRING_AGG(name, ', ' ORDER BY name) AS empleados
+FROM employees
+GROUP BY department;`,
+    titulo: "Lista los empleados de cada departamento concatenados en un string.",
+    explicacion: "STRING_AGG concatena valores de un grupo con separador. En MySQL se llama GROUP_CONCAT. ORDER BY dentro define el orden de concatenación.",
+    conceptos: ["STRING_AGG / GROUP_CONCAT", "GROUP BY"] },
+
+  { sql: `SELECT user_id, ARRAY_AGG(tag) AS tags
+FROM user_tags
+GROUP BY user_id;`,
+    titulo: "Agrupa todas las etiquetas de cada usuario en un array.",
+    explicacion: "ARRAY_AGG junta los valores del grupo en un array. Útil para JSON APIs, resúmenes, o guardar en columnas array.",
+    conceptos: ["ARRAY_AGG", "GROUP BY"] },
+
+  { sql: `SELECT u.name,
+       (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) AS num_pedidos
+FROM users u;`,
+    titulo: "Añade a cada usuario el conteo de sus pedidos usando subconsulta escalar.",
+    explicacion: "Subconsulta escalar en el SELECT: devuelve un único valor por fila externa. Equivalente a un LEFT JOIN + GROUP BY, pero a veces más legible.",
+    conceptos: ["Subconsulta"] },
+
+  { sql: `SELECT categoria, promedio
+FROM (
+  SELECT category AS categoria, AVG(price) AS promedio
+  FROM products
+  GROUP BY category
+) t
+WHERE promedio > 100;`,
+    titulo: "Categorías cuyo precio medio supera 100 (usando tabla derivada).",
+    explicacion: "Subconsulta en el FROM (derived table). Se calcula el promedio y luego se filtra. Con HAVING sería más corto pero muestra el patrón.",
+    conceptos: ["Subconsulta", "GROUP BY"] },
+
+  { sql: `WITH activos AS (
+  SELECT * FROM users WHERE active AND last_login > NOW() - INTERVAL '30 days'
+)
+SELECT country, COUNT(*) FROM activos GROUP BY country;`,
+    titulo: "Usuarios activos recientes agrupados por país usando CTE.",
+    explicacion: "WITH crea una subconsulta con nombre reutilizable. Mejora legibilidad y permite dividir consultas complejas en pasos claros.",
+    conceptos: ["CTE (WITH)", "GROUP BY"] },
+
+  { sql: `SELECT id FROM active_users
+UNION ALL
+SELECT id FROM premium_users;`,
+    titulo: "Concatena IDs de ambas tablas manteniendo duplicados.",
+    explicacion: "UNION ALL es más rápido que UNION porque no elimina duplicados. Úsalo cuando sepas que no hay duplicados o quieras conservarlos.",
+    conceptos: ["UNION / UNION ALL"] },
+
+  { sql: `SELECT id FROM users_2025
+INTERSECT
+SELECT id FROM users_2026;`,
+    titulo: "Usuarios que existían en ambas tablas (intersección).",
+    explicacion: "INTERSECT devuelve solo los valores presentes en ambos SELECT. EXCEPT (o MINUS en Oracle) sería la resta.",
+    conceptos: ["INTERSECT / EXCEPT"] },
+
+  { sql: `SELECT total / NULLIF(count, 0) AS promedio
+FROM stats;`,
+    titulo: "Divide total por count evitando error de división por cero.",
+    explicacion: "NULLIF(a, b) devuelve NULL si a=b, si no devuelve a. Al dividir por NULL el resultado es NULL en lugar de error, y suele ser lo deseado.",
+    conceptos: ["NULLIF"] },
+
+  { sql: `CREATE VIEW usuarios_activos AS
+SELECT id, name, email
+FROM users
+WHERE active AND deleted_at IS NULL;`,
+    titulo: "Crea una vista con los usuarios activos no eliminados.",
+    explicacion: "Una VIEW es una consulta guardada como tabla virtual. Se consulta como cualquier tabla pero no almacena datos; se ejecuta al usarla.",
+    conceptos: ["VIEW"] },
+
+  { sql: `BEGIN;
+UPDATE cuentas SET saldo = saldo - 100 WHERE id = 1;
+UPDATE cuentas SET saldo = saldo + 100 WHERE id = 2;
+COMMIT;`,
+    titulo: "Transferencia entre cuentas dentro de una transacción atómica.",
+    explicacion: "BEGIN abre la transacción. Ambos UPDATE se aplican juntos con COMMIT. Si algo falla, ROLLBACK revierte todo: nadie ve un saldo intermedio.",
+    conceptos: ["TRANSACTION (BEGIN/COMMIT/ROLLBACK)"] },
+
+  { sql: `INSERT INTO users (id, name, email)
+VALUES (1, 'Ana', 'ana@x.com')
+ON CONFLICT (id) DO UPDATE
+SET name = EXCLUDED.name, email = EXCLUDED.email;`,
+    titulo: "Inserta un usuario, o lo actualiza si ya existe (UPSERT).",
+    explicacion: "ON CONFLICT captura el choque con una restricción única. EXCLUDED referencia los valores que se intentaban insertar. Patrón clásico de upsert en Postgres.",
+    conceptos: ["UPSERT (INSERT ON CONFLICT)"] },
+
+  { sql: `UPDATE orders o
+SET user_name = u.name
+FROM users u
+WHERE o.user_id = u.id;`,
+    titulo: "Actualiza orders copiando el nombre del usuario desde users.",
+    explicacion: "UPDATE ... FROM permite usar otras tablas en el UPDATE (Postgres). En MySQL sería UPDATE con JOIN. Útil para denormalizar o corregir datos.",
+    conceptos: ["UPDATE"] },
+
+  { sql: `DELETE FROM orders
+WHERE user_id IN (SELECT id FROM users WHERE deleted_at IS NOT NULL);`,
+    titulo: "Elimina pedidos de usuarios que han sido borrados lógicamente.",
+    explicacion: "DELETE con subconsulta permite filtrar por datos de otra tabla. Alternativa: DELETE ... USING users WHERE ... (Postgres).",
+    conceptos: ["DELETE", "Subconsulta"] },
+
+  { sql: `INSERT INTO users (name, email)
+VALUES ('Ana', 'ana@x.com')
+RETURNING id, created_at;`,
+    titulo: "Inserta un usuario y devuelve el id y la fecha generados.",
+    explicacion: "RETURNING (Postgres) devuelve columnas de las filas afectadas por INSERT/UPDATE/DELETE. Evita hacer un SELECT posterior para obtener el id autogenerado.",
+    conceptos: ["RETURNING"] },
+
+  // --- MÁS EXPERTAS ---
+  { sql: `SELECT name, score,
+       DENSE_RANK() OVER (ORDER BY score DESC) AS posicion
+FROM players;`,
+    titulo: "Ranking de jugadores sin huecos en los empates (DENSE_RANK).",
+    explicacion: "DENSE_RANK asigna la misma posición a empatados y NO deja huecos: 1,2,2,3. RANK dejaría 1,2,2,4. ROW_NUMBER no permite empates.",
+    conceptos: ["RANK() / DENSE_RANK()"] },
+
+  { sql: `SELECT name, score,
+       NTILE(4) OVER (ORDER BY score) AS cuartil
+FROM alumnos;`,
+    titulo: "Divide a los alumnos en 4 grupos del mismo tamaño según su puntuación.",
+    explicacion: "NTILE(n) reparte las filas en n buckets del mismo tamaño (tan igual como sea posible). Útil para percentiles, deciles, cuartiles.",
+    conceptos: ["NTILE"] },
+
+  { sql: `SELECT day, price,
+       FIRST_VALUE(price) OVER (ORDER BY day) AS precio_inicial,
+       LAST_VALUE(price) OVER (
+         ORDER BY day
+         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS precio_final
+FROM prices;`,
+    titulo: "Muestra cada precio con el primero y último de la serie.",
+    explicacion: "LAST_VALUE requiere frame explícito UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING; si no, por defecto solo mira hasta la fila actual y devolvería el precio corriente.",
+    conceptos: ["FIRST_VALUE / LAST_VALUE / NTH_VALUE", "ROWS BETWEEN / RANGE BETWEEN"] },
+
+  { sql: `SELECT day, sales,
+       AVG(sales) OVER (
+         ORDER BY day
+         ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+       ) AS media_movil_7d
+FROM daily_sales;`,
+    titulo: "Media móvil de 7 días sobre ventas diarias.",
+    explicacion: "AVG con ROWS BETWEEN 6 PRECEDING AND CURRENT ROW calcula el promedio de la fila actual y las 6 anteriores. Suavizado clásico para series temporales.",
+    conceptos: ["ROWS BETWEEN / RANGE BETWEEN", "COUNT / SUM / AVG / MIN / MAX"] },
+
+  { sql: `SELECT u.id, u.name, x.total
+FROM users u
+CROSS JOIN LATERAL (
+  SELECT total FROM orders o
+  WHERE o.user_id = u.id
+  ORDER BY total DESC
+  LIMIT 3
+) x;`,
+    titulo: "Los 3 pedidos más grandes de cada usuario (con LATERAL).",
+    explicacion: "LATERAL permite que la subconsulta referencie u.id. Se ejecuta 'por cada fila' de users, devolviendo hasta 3 pedidos por usuario. Muy potente para 'top N por grupo'.",
+    conceptos: ["LATERAL"] },
+
+  { sql: `SELECT country, city, SUM(sales) AS total
+FROM ventas
+GROUP BY ROLLUP (country, city);`,
+    titulo: "Ventas por país y ciudad, con subtotales por país y total general (ROLLUP).",
+    explicacion: "ROLLUP(a,b) agrupa por (a,b), (a) y (). En la columna donde no aplica el nivel aparece NULL, indicando el subtotal.",
+    conceptos: ["GROUPING SETS / ROLLUP / CUBE", "GROUP BY"] },
+
+  { sql: `SELECT year, product,
+       SUM(sales) FILTER (WHERE region = 'EU') AS eu,
+       SUM(sales) FILTER (WHERE region = 'US') AS us
+FROM ventas
+GROUP BY year, product;`,
+    titulo: "Ventas por año y producto, separando EU y US en columnas.",
+    explicacion: "FILTER (WHERE ...) aplica la agregación solo a las filas que cumplen la condición. Es más limpio que SUM(CASE WHEN ...).",
+    conceptos: ["GROUP BY", "COUNT / SUM / AVG / MIN / MAX"] },
+
+  { sql: `SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS mediana,
+       PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY salary) AS p95
+FROM employees;`,
+    titulo: "Calcula la mediana y el percentil 95 de los salarios.",
+    explicacion: "PERCENTILE_CONT interpola entre valores. WITHIN GROUP define el orden. Es el estándar SQL para percentiles y mediana (que es simplemente 0.5).",
+    conceptos: ["PERCENTILE_CONT / PERCENTILE_DISC"] },
+
+  { sql: `SELECT d::date AS dia, COALESCE(o.total, 0) AS ventas
+FROM generate_series(
+  DATE '2026-01-01', DATE '2026-01-31', INTERVAL '1 day'
+) d
+LEFT JOIN daily_sales o ON o.day = d::date
+ORDER BY d;`,
+    titulo: "Ventas diarias de enero rellenando con 0 los días sin datos.",
+    explicacion: "generate_series produce todas las fechas del rango. LEFT JOIN con las ventas reales; COALESCE convierte los NULL en 0. Truco clásico para rellenar huecos.",
+    conceptos: ["GENERATE_SERIES", "LEFT JOIN", "COALESCE"] },
+
+  { sql: `SELECT id, data->>'name' AS nombre, data->'address'->>'city' AS ciudad
+FROM eventos
+WHERE data @> '{"type":"signup"}';`,
+    titulo: "Extrae campos de una columna JSONB y filtra por contenido.",
+    explicacion: "-> devuelve JSON, ->> devuelve texto. @> comprueba que el JSON izquierdo contiene el derecho. GIN index sobre data acelera estas búsquedas.",
+    conceptos: ["JSON / JSONB (Postgres)"] },
+
+  { sql: `SELECT * FROM posts
+WHERE 'sql' = ANY(tags)
+   OR tags && ARRAY['postgres','database'];`,
+    titulo: "Posts que tienen la etiqueta 'sql' o alguna de 'postgres'/'database'.",
+    explicacion: "ANY comprueba pertenencia. && comprueba solapamiento entre arrays. @> sería 'contiene todos'. Índice GIN sobre tags acelera estos operadores.",
+    conceptos: ["Arrays (Postgres)"] },
+
+  { sql: `SELECT id, title, ts_rank(tsv, q) AS rango
+FROM docs, to_tsquery('spanish', 'sql & experto') q
+WHERE tsv @@ q
+ORDER BY rango DESC
+LIMIT 20;`,
+    titulo: "Búsqueda full-text con ranking de relevancia.",
+    explicacion: "tsv es la columna tsvector precalculada. to_tsquery construye la consulta. @@ hace el match. ts_rank puntúa la relevancia para ordenar resultados.",
+    conceptos: ["Full-Text Search (Postgres)"] },
+
+  { sql: `EXPLAIN ANALYZE
+SELECT * FROM orders WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20;`,
+    titulo: "Analiza el plan de ejecución real de una consulta.",
+    explicacion: "EXPLAIN muestra el plan estimado. ANALYZE lo ejecuta y muestra tiempos y filas reales. Clave para detectar seq scans, índices no usados, joins malos.",
+    conceptos: ["EXPLAIN / EXPLAIN ANALYZE"] },
+
+  { sql: `CREATE MATERIALIZED VIEW ventas_mensuales AS
+SELECT DATE_TRUNC('month', created_at) AS mes, SUM(total) AS ventas
+FROM orders
+GROUP BY 1;
+
+REFRESH MATERIALIZED VIEW ventas_mensuales;`,
+    titulo: "Vista materializada con ventas mensuales y su refresco.",
+    explicacion: "A diferencia de una VIEW normal, la materializada guarda el resultado en disco. Consultas instantáneas, pero hay que refrescarla (manual o programado).",
+    conceptos: ["MATERIALIZED VIEW", "GROUP BY", "EXTRACT / DATE_TRUNC"] },
+
+  { sql: `MERGE INTO clientes c
+USING nuevos_clientes n ON c.id = n.id
+WHEN MATCHED THEN UPDATE SET name = n.name, email = n.email
+WHEN NOT MATCHED THEN INSERT (id, name, email) VALUES (n.id, n.name, n.email);`,
+    titulo: "Sincroniza la tabla clientes con nuevos_clientes usando MERGE.",
+    explicacion: "MERGE (estándar SQL, soportado en Postgres 15+, Oracle, SQL Server) hace INSERT/UPDATE/DELETE según coincida con la fuente. Ideal para sincronizaciones batch.",
+    conceptos: ["MERGE"] },
+
+  { sql: `WITH numerados AS (
+  SELECT *, ROW_NUMBER() OVER (
+    PARTITION BY email ORDER BY created_at DESC
+  ) AS rn FROM users
+)
+DELETE FROM users
+WHERE id IN (SELECT id FROM numerados WHERE rn > 1);`,
+    titulo: "Elimina usuarios duplicados por email, dejando el más reciente.",
+    explicacion: "Numera duplicados por email ordenando por fecha (el más nuevo = rn 1). Luego borra todos los rn > 1. Patrón clásico de deduplicación.",
+    conceptos: ["CTE (WITH)", "ROW_NUMBER()", "PARTITION BY", "DELETE"] },
+
+  { sql: `WITH islas AS (
+  SELECT valor,
+    valor - ROW_NUMBER() OVER (ORDER BY valor) AS grp
+  FROM numeros
+)
+SELECT MIN(valor) AS inicio, MAX(valor) AS fin
+FROM islas
+GROUP BY grp
+ORDER BY inicio;`,
+    titulo: "Encuentra rangos de números consecutivos (gaps and islands).",
+    explicacion: "Truco: si numeras las filas y restas el valor, los números consecutivos comparten el mismo 'grp'. Agrupando por grp obtienes los rangos.",
+    conceptos: ["CTE (WITH)", "ROW_NUMBER()", "GROUP BY"] },
+
+  { sql: `WITH ventas_dia AS (
+  SELECT DATE_TRUNC('day', created_at) AS dia, SUM(total) AS total
+  FROM orders GROUP BY 1
+)
+SELECT dia, total,
+  AVG(total) OVER (ORDER BY dia ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS media_7d,
+  total - LAG(total, 7) OVER (ORDER BY dia) AS vs_hace_una_semana
+FROM ventas_dia;`,
+    titulo: "Ventas diarias con media móvil de 7 días y comparativa año/semana anterior.",
+    explicacion: "Combina CTE + varias window functions: AVG en frame de 7 días para suavizar, y LAG(x, 7) para comparar con hace una semana. Patrón real de dashboards.",
+    conceptos: ["CTE (WITH)", "ROWS BETWEEN / RANGE BETWEEN", "LAG() / LEAD()"] },
+
+  { sql: `SELECT dept, name, salary,
+       salary - AVG(salary) OVER (PARTITION BY dept) AS diff_media_dept,
+       salary * 100.0 / SUM(salary) OVER (PARTITION BY dept) AS pct_dept
+FROM employees;`,
+    titulo: "Salario de cada empleado comparado con la media y peso porcentual dentro del departamento.",
+    explicacion: "Window functions aplicadas sin subconsulta: la agregación se calcula por partición pero cada fila individual se preserva. Muy útil para análisis comparativos.",
+    conceptos: ["PARTITION BY", "COUNT / SUM / AVG / MIN / MAX"] },
+];
+
+// ============================================================
+// CÁLCULO AUTOMÁTICO DE NIVEL POR COMPLEJIDAD
+// ============================================================
+function calcularNivel(sql) {
+  const s = sql.toUpperCase();
+  const has = (re) => re.test(s);
+  const count = (re) => (s.match(re) || []).length;
+
+  const expert =
+    has(/\bWITH\s+RECURSIVE\b/) ||
+    has(/\bOVER\s*\(/) ||          // window function
+    has(/\bPARTITION\s+BY\b/) ||
+    has(/\bLAG\s*\(|LEAD\s*\(|ROW_NUMBER\s*\(|RANK\s*\(|DENSE_RANK\s*\(/) ||
+    count(/\bJOIN\b/g) >= 3;
+
+  if (expert) return "experto";
+
+  const medio =
+    has(/\bJOIN\b/) ||
+    has(/\bGROUP\s+BY\b/) ||
+    has(/\bHAVING\b/) ||
+    has(/\bUNION\b|\bINTERSECT\b|\bEXCEPT\b/) ||
+    has(/\bCASE\s+WHEN\b/) ||
+    /\(\s*SELECT\b/.test(s) ||     // subconsulta
+    has(/\bEXISTS\s*\(/) ||
+    has(/\bCOALESCE\s*\(/) ||
+    has(/\bWITH\b/);
+
+  if (medio) return "medio";
+  return "basico";
+}
+
+// Enriquecer cartas con id y nivel
+const CARDS = RAW_CARDS.map((c, i) => ({
+  id: "c" + i,
+  ...c,
+  nivel: calcularNivel(c.sql),
+}));
+
+// ============================================================
+// EJERCICIOS DE COMPLETAR (100 ejercicios)
+// respuestas: array de strings aceptados (case-insensitive)
+// ============================================================
+const RAW_EJERCICIOS = [
+  // ---------- BÁSICO (40) ----------
+  { nivel:"basico", desc:"Recupera todas las filas de la tabla users.", sql:"SELECT * ___ users;", respuestas:["FROM"], pista:"Se indica de dónde vienen los datos." },
+  { nivel:"basico", desc:"Selecciona solo el nombre de todos los usuarios.", sql:"SELECT ___ FROM users;", respuestas:["name","nombre"], pista:"Nombre de la columna." },
+  { nivel:"basico", desc:"Filtra usuarios mayores o iguales a 18 años.", sql:"SELECT * FROM users ___ age >= 18;", respuestas:["WHERE"], pista:"Cláusula para filtrar filas." },
+  { nivel:"basico", desc:"Usuarios cuyo país es exactamente 'ES'.", sql:"SELECT * FROM users WHERE country ___ 'ES';", respuestas:["="], pista:"Operador de igualdad." },
+  { nivel:"basico", desc:"Usuarios que NO tienen email registrado.", sql:"SELECT * FROM users WHERE email ___ NULL;", respuestas:["IS"], pista:"Con NULL no se usa =." },
+  { nivel:"basico", desc:"Usuarios que SÍ tienen email registrado.", sql:"SELECT * FROM users WHERE email ___ NULL;", respuestas:["IS NOT"], pista:"Negación de IS NULL." },
+  { nivel:"basico", desc:"Usuarios de España, México o Argentina.", sql:"SELECT * FROM users WHERE country ___ ('ES','MX','AR');", respuestas:["IN"], pista:"Pertenencia a una lista." },
+  { nivel:"basico", desc:"Usuarios cuyo nombre empieza por A.", sql:"SELECT * FROM users WHERE name ___ 'A%';", respuestas:["LIKE"], pista:"Coincidencia por patrón." },
+  { nivel:"basico", desc:"Usuarios con edad entre 18 y 65 inclusive.", sql:"SELECT * FROM users WHERE age ___ 18 AND 65;", respuestas:["BETWEEN"], pista:"Rango inclusivo." },
+  { nivel:"basico", desc:"Ordena usuarios por nombre ascendente (explícito).", sql:"SELECT * FROM users ORDER BY name ___;", respuestas:["ASC"], pista:"Dirección de orden por defecto." },
+  { nivel:"basico", desc:"Ordena productos del más caro al más barato.", sql:"SELECT * FROM products ORDER BY price ___;", respuestas:["DESC"], pista:"De mayor a menor." },
+  { nivel:"basico", desc:"Devuelve solo los 10 primeros resultados.", sql:"SELECT * FROM users ___ 10;", respuestas:["LIMIT"], pista:"Limita cantidad de filas." },
+  { nivel:"basico", desc:"Salta 20 filas y devuelve las siguientes 10 (paginación).", sql:"SELECT * FROM users LIMIT 10 ___ 20;", respuestas:["OFFSET"], pista:"Se salta filas al inicio." },
+  { nivel:"basico", desc:"Lista de países SIN duplicados.", sql:"SELECT ___ country FROM users;", respuestas:["DISTINCT"], pista:"Elimina repetidos." },
+  { nivel:"basico", desc:"Cuenta cuántos usuarios hay en total.", sql:"SELECT ___(*) FROM users;", respuestas:["COUNT"], pista:"Función de agregación para contar." },
+  { nivel:"basico", desc:"Precio promedio de todos los productos.", sql:"SELECT ___(price) FROM products;", respuestas:["AVG"], pista:"Media aritmética." },
+  { nivel:"basico", desc:"Precio máximo entre todos los productos.", sql:"SELECT ___(price) FROM products;", respuestas:["MAX"], pista:"El más grande." },
+  { nivel:"basico", desc:"Precio mínimo.", sql:"SELECT ___(price) FROM products;", respuestas:["MIN"], pista:"El más pequeño." },
+  { nivel:"basico", desc:"Suma total de ventas.", sql:"SELECT ___(total) FROM orders;", respuestas:["SUM"], pista:"Función que suma valores." },
+  { nivel:"basico", desc:"Renombra la columna name a 'nombre' en el resultado.", sql:"SELECT name ___ nombre FROM users;", respuestas:["AS"], pista:"Palabra clave de alias." },
+  { nivel:"basico", desc:"Convierte todos los nombres a mayúsculas.", sql:"SELECT ___(name) FROM users;", respuestas:["UPPER"], pista:"Función de string." },
+  { nivel:"basico", desc:"Convierte todos los emails a minúsculas.", sql:"SELECT ___(email) FROM users;", respuestas:["LOWER"], pista:"Función de string." },
+  { nivel:"basico", desc:"Longitud (número de caracteres) del nombre.", sql:"SELECT ___(name) FROM users;", respuestas:["LENGTH","LEN","CHAR_LENGTH"], pista:"Función de string." },
+  { nivel:"basico", desc:"Elimina espacios sobrantes a los lados del nombre.", sql:"SELECT ___(name) FROM users;", respuestas:["TRIM"], pista:"Limpia espacios." },
+  { nivel:"basico", desc:"Reemplaza los guiones en el teléfono por vacío.", sql:"SELECT ___(phone, '-', '') FROM users;", respuestas:["REPLACE"], pista:"Sustituye texto." },
+  { nivel:"basico", desc:"Fecha y hora actuales del servidor.", sql:"SELECT ___();", respuestas:["NOW","CURRENT_TIMESTAMP"], pista:"Función sin argumentos." },
+  { nivel:"basico", desc:"Pedidos de los últimos 7 días.", sql:"SELECT * FROM orders WHERE created_at >= NOW() - ___ '7 days';", respuestas:["INTERVAL"], pista:"Tipo para duraciones." },
+  { nivel:"basico", desc:"Extrae el año de la fecha de creación.", sql:"SELECT ___(YEAR FROM created_at) FROM orders;", respuestas:["EXTRACT"], pista:"Función estándar para partes de fecha." },
+  { nivel:"basico", desc:"Redondea el precio a 2 decimales.", sql:"SELECT ___(price, 2) FROM products;", respuestas:["ROUND"], pista:"Redondeo." },
+  { nivel:"basico", desc:"Valor absoluto del descuento.", sql:"SELECT ___(discount) FROM products;", respuestas:["ABS"], pista:"Quita el signo." },
+  { nivel:"basico", desc:"Convierte el string '42' a entero (sintaxis Postgres).", sql:"SELECT '42'___INT;", respuestas:["::"], pista:"Operador atajo de CAST en Postgres." },
+  { nivel:"basico", desc:"Inserta un usuario nuevo.", sql:"INSERT ___ users (name) VALUES ('Ana');", respuestas:["INTO"], pista:"Preposición del INSERT." },
+  { nivel:"basico", desc:"Palabra clave antes de la tupla de valores.", sql:"INSERT INTO users (name) ___ ('Ana');", respuestas:["VALUES"], pista:"Lo que va antes del paréntesis con datos." },
+  { nivel:"basico", desc:"Actualiza el campo active a false para el usuario 1.", sql:"UPDATE users ___ active = false WHERE id = 1;", respuestas:["SET"], pista:"Palabra que introduce las asignaciones." },
+  { nivel:"basico", desc:"Elimina el usuario con id 1.", sql:"DELETE ___ users WHERE id = 1;", respuestas:["FROM"], pista:"Preposición del DELETE." },
+  { nivel:"basico", desc:"Vacía por completo la tabla logs de forma rápida.", sql:"___ TABLE logs;", respuestas:["TRUNCATE"], pista:"Más rápido que DELETE sin WHERE." },
+  { nivel:"basico", desc:"Crea una tabla nueva llamada users.", sql:"___ TABLE users (id INT PRIMARY KEY);", respuestas:["CREATE"], pista:"Palabra clave de DDL." },
+  { nivel:"basico", desc:"Añade una nueva columna phone a la tabla.", sql:"ALTER TABLE users ___ COLUMN phone TEXT;", respuestas:["ADD"], pista:"Operación de agregar." },
+  { nivel:"basico", desc:"Elimina la tabla temp_data si existe.", sql:"DROP TABLE ___ EXISTS temp_data;", respuestas:["IF"], pista:"Condicional para evitar error." },
+  { nivel:"basico", desc:"Crea un índice llamado idx_email sobre email.", sql:"CREATE ___ idx_email ON users(email);", respuestas:["INDEX"], pista:"Estructura para acelerar búsquedas." },
+
+  // ---------- MEDIO (35) ----------
+  { nivel:"medio", desc:"Combina users y orders trayendo solo usuarios con al menos un pedido.", sql:"SELECT u.name, o.total FROM users u ___ JOIN orders o ON o.user_id = u.id;", respuestas:["INNER"], pista:"El JOIN por defecto." },
+  { nivel:"medio", desc:"Trae todos los usuarios, incluso los que no tienen pedidos.", sql:"SELECT u.name, o.total FROM users u ___ JOIN orders o ON o.user_id = u.id;", respuestas:["LEFT"], pista:"Preserva la tabla izquierda." },
+  { nivel:"medio", desc:"Trae todos los pedidos, incluso si el usuario no existe.", sql:"SELECT u.name, o.total FROM users u ___ JOIN orders o ON o.user_id = u.id;", respuestas:["RIGHT"], pista:"Preserva la tabla derecha." },
+  { nivel:"medio", desc:"Producto cartesiano entre tallas y colores.", sql:"SELECT * FROM sizes ___ JOIN colors;", respuestas:["CROSS"], pista:"Todas las combinaciones." },
+  { nivel:"medio", desc:"Cuenta usuarios por país.", sql:"SELECT country, COUNT(*) FROM users ___ country;", respuestas:["GROUP BY"], pista:"Agrupación para agregar." },
+  { nivel:"medio", desc:"Solo países con más de 100 usuarios.", sql:"SELECT country, COUNT(*) FROM users GROUP BY country ___ COUNT(*) > 100;", respuestas:["HAVING"], pista:"Filtro sobre grupos." },
+  { nivel:"medio", desc:"Usuarios que tienen al menos un pedido (con subconsulta).", sql:"SELECT * FROM users WHERE id ___ (SELECT user_id FROM orders);", respuestas:["IN"], pista:"Pertenencia a un conjunto." },
+  { nivel:"medio", desc:"Usuarios con al menos un pedido (con EXISTS).", sql:"SELECT * FROM users u WHERE ___ (SELECT 1 FROM orders o WHERE o.user_id = u.id);", respuestas:["EXISTS"], pista:"Devuelve TRUE si la subconsulta produce filas." },
+  { nivel:"medio", desc:"Define un CTE llamado 'activos'.", sql:"___ activos AS (SELECT * FROM users WHERE active) SELECT * FROM activos;", respuestas:["WITH"], pista:"Palabra clave para CTE." },
+  { nivel:"medio", desc:"Une dos SELECT SIN eliminar duplicados.", sql:"SELECT id FROM a ___ SELECT id FROM b;", respuestas:["UNION ALL"], pista:"Variante rápida de UNION." },
+  { nivel:"medio", desc:"IDs presentes en ambas tablas.", sql:"SELECT id FROM a ___ SELECT id FROM b;", respuestas:["INTERSECT"], pista:"Operador de conjuntos: intersección." },
+  { nivel:"medio", desc:"IDs de a que NO están en b.", sql:"SELECT id FROM a ___ SELECT id FROM b;", respuestas:["EXCEPT","MINUS"], pista:"Resta de conjuntos." },
+  { nivel:"medio", desc:"Cuenta clientes distintos que han comprado.", sql:"SELECT COUNT(___ user_id) FROM orders;", respuestas:["DISTINCT"], pista:"Solo valores únicos." },
+  { nivel:"medio", desc:"Concatena los nombres de empleados por departamento.", sql:"SELECT dept, ___(name, ', ') FROM employees GROUP BY dept;", respuestas:["STRING_AGG","GROUP_CONCAT"], pista:"Agregación de strings." },
+  { nivel:"medio", desc:"Junta las etiquetas de cada usuario en un array.", sql:"SELECT user_id, ___(tag) FROM tags GROUP BY user_id;", respuestas:["ARRAY_AGG"], pista:"Agregación a array." },
+  { nivel:"medio", desc:"if/else de SQL: clasifica menor/adulto.", sql:"SELECT name, ___ WHEN age < 18 THEN 'menor' ELSE 'adulto' END FROM users;", respuestas:["CASE"], pista:"Estructura condicional." },
+  { nivel:"medio", desc:"Palabra que sigue a WHEN en un CASE.", sql:"SELECT CASE WHEN age < 18 ___ 'menor' ELSE 'adulto' END FROM users;", respuestas:["THEN"], pista:"'Entonces' en inglés." },
+  { nivel:"medio", desc:"Devuelve el primer valor no NULL de la lista.", sql:"SELECT ___(nickname, name, 'anon') FROM users;", respuestas:["COALESCE"], pista:"Cascada de defaults." },
+  { nivel:"medio", desc:"Evita división por cero devolviendo NULL cuando count = 0.", sql:"SELECT total / ___(count, 0) FROM stats;", respuestas:["NULLIF"], pista:"Devuelve NULL si a=b." },
+  { nivel:"medio", desc:"Crea una tabla virtual (no materializada).", sql:"CREATE ___ activos AS SELECT * FROM users WHERE active;", respuestas:["VIEW"], pista:"Consulta guardada." },
+  { nivel:"medio", desc:"Actualiza pedidos usando datos de la tabla users.", sql:"UPDATE orders o SET user_name = u.name ___ users u WHERE o.user_id = u.id;", respuestas:["FROM"], pista:"Postgres: cláusula extra en UPDATE." },
+  { nivel:"medio", desc:"Anti-join: usuarios sin ningún pedido.", sql:"SELECT u.* FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id ___ NULL;", respuestas:["IS"], pista:"Con NULL nunca se usa =." },
+  { nivel:"medio", desc:"Confirma una transacción para hacer los cambios permanentes.", sql:"BEGIN; UPDATE ...; ___;", respuestas:["COMMIT"], pista:"Aplica los cambios." },
+  { nivel:"medio", desc:"Revierte todos los cambios de la transacción.", sql:"BEGIN; UPDATE ...; ___;", respuestas:["ROLLBACK"], pista:"Deshace." },
+  { nivel:"medio", desc:"Alternativa a ON cuando las columnas se llaman igual.", sql:"SELECT * FROM users u JOIN orders o ___ (user_id);", respuestas:["USING"], pista:"Se especifica solo la columna común." },
+  { nivel:"medio", desc:"Self-join: cada empleado con su jefe.", sql:"SELECT a.name, b.name FROM employees a JOIN employees b ___ b.id = a.manager_id;", respuestas:["ON"], pista:"Condición del JOIN." },
+  { nivel:"medio", desc:"Inserta y actualiza si ya existe (Postgres).", sql:"INSERT INTO users(id,name) VALUES(1,'Ana') ON ___ (id) DO UPDATE SET name = EXCLUDED.name;", respuestas:["CONFLICT"], pista:"Cláusula que captura choque con restricción única." },
+  { nivel:"medio", desc:"Devuelve el id autogenerado tras insertar.", sql:"INSERT INTO users(name) VALUES('Ana') ___ id;", respuestas:["RETURNING"], pista:"Postgres devuelve columnas de la fila insertada." },
+  { nivel:"medio", desc:"Marca la columna como clave primaria.", sql:"CREATE TABLE t (id INT ___ KEY);", respuestas:["PRIMARY"], pista:"Identifica cada fila unívocamente." },
+  { nivel:"medio", desc:"Impide valores repetidos en la columna email.", sql:"CREATE TABLE t (email TEXT ___);", respuestas:["UNIQUE"], pista:"Restricción de unicidad." },
+  { nivel:"medio", desc:"Impide que la columna acepte NULL.", sql:"CREATE TABLE t (name TEXT ___ NULL);", respuestas:["NOT"], pista:"Restricción de obligatoriedad." },
+  { nivel:"medio", desc:"Fecha por defecto al insertar sin especificar.", sql:"CREATE TABLE t (created_at TIMESTAMP ___ NOW());", respuestas:["DEFAULT"], pista:"Valor por defecto." },
+  { nivel:"medio", desc:"Valida que la edad sea >= 0.", sql:"CREATE TABLE t (age INT ___ (age >= 0));", respuestas:["CHECK"], pista:"Restricción con condición booleana." },
+  { nivel:"medio", desc:"Enlaza user_id con la tabla users.", sql:"user_id INT REFERENCES ___(id)", respuestas:["users"], pista:"Nombre de la tabla referida." },
+  { nivel:"medio", desc:"Palabra clave de restricción de clave foránea.", sql:"___ KEY (user_id) REFERENCES users(id)", respuestas:["FOREIGN"], pista:"Relaciona con otra tabla." },
+
+  // ---------- EXPERTO (25) ----------
+  { nivel:"experto", desc:"Introduce una window function.", sql:"SELECT name, ROW_NUMBER() ___ (ORDER BY score DESC) FROM players;", respuestas:["OVER"], pista:"Palabra clave que sigue a la función de ventana." },
+  { nivel:"experto", desc:"Reinicia el ranking por departamento.", sql:"SELECT name, RANK() OVER (___ BY dept ORDER BY salary DESC) FROM emp;", respuestas:["PARTITION"], pista:"Divide en grupos independientes." },
+  { nivel:"experto", desc:"Accede al valor de la fila anterior.", sql:"SELECT day, price, ___(price) OVER (ORDER BY day) AS anterior FROM prices;", respuestas:["LAG"], pista:"'Retrasar' en inglés." },
+  { nivel:"experto", desc:"Accede al valor de la fila siguiente.", sql:"SELECT day, price, ___(price) OVER (ORDER BY day) AS proximo FROM prices;", respuestas:["LEAD"], pista:"'Adelantar' en inglés." },
+  { nivel:"experto", desc:"CTE que se referencia a sí misma para jerarquías.", sql:"WITH ___ tree AS (SELECT ... UNION ALL SELECT ...) SELECT * FROM tree;", respuestas:["RECURSIVE"], pista:"Habilita autoreferencia." },
+  { nivel:"experto", desc:"Divide filas en 4 buckets del mismo tamaño (cuartiles).", sql:"SELECT name, ___(4) OVER (ORDER BY score) FROM alumnos;", respuestas:["NTILE"], pista:"Función de ventana para percentiles." },
+  { nivel:"experto", desc:"Define el frame de la ventana por posición.", sql:"AVG(sales) OVER (ORDER BY day ___ BETWEEN 6 PRECEDING AND CURRENT ROW)", respuestas:["ROWS"], pista:"Frame por número de filas." },
+  { nivel:"experto", desc:"Frame que empieza en el principio de la partición.", sql:"SUM(sales) OVER (ORDER BY day ROWS BETWEEN ___ PRECEDING AND CURRENT ROW)", respuestas:["UNBOUNDED"], pista:"Sin límite inferior." },
+  { nivel:"experto", desc:"Subconsulta que referencia columnas externas en el FROM.", sql:"SELECT u.*, x.* FROM users u, ___ (SELECT * FROM orders o WHERE o.user_id = u.id LIMIT 3) x;", respuestas:["LATERAL"], pista:"Habilita 'para cada fila...'" },
+  { nivel:"experto", desc:"Añade subtotales por país y total general.", sql:"SELECT country, city, SUM(sales) FROM v GROUP BY ___(country, city);", respuestas:["ROLLUP"], pista:"Grouping set con subtotales acumulados." },
+  { nivel:"experto", desc:"Todas las combinaciones posibles de agrupación.", sql:"SELECT country, city, SUM(sales) FROM v GROUP BY ___(country, city);", respuestas:["CUBE"], pista:"Grouping set con todas las combinaciones." },
+  { nivel:"experto", desc:"Agregación con filtro por fila (Postgres).", sql:"SELECT country, COUNT(*) ___ (WHERE status = 'active') AS activos FROM users GROUP BY country;", respuestas:["FILTER"], pista:"Alternativa a SUM(CASE WHEN ...)." },
+  { nivel:"experto", desc:"Calcula la mediana (percentil 0.5) interpolando.", sql:"SELECT ___(0.5) WITHIN GROUP (ORDER BY salary) FROM emp;", respuestas:["PERCENTILE_CONT"], pista:"Percentil continuo." },
+  { nivel:"experto", desc:"Genera una serie de fechas día a día.", sql:"SELECT * FROM ___('2026-01-01'::date, '2026-01-31', '1 day');", respuestas:["generate_series"], pista:"Función set-returning de Postgres." },
+  { nivel:"experto", desc:"Extrae un campo JSONB como TEXTO.", sql:"SELECT data___'name' FROM eventos;", respuestas:["->>"], pista:"Operador JSON que devuelve texto (no JSON)." },
+  { nivel:"experto", desc:"Comprueba pertenencia a un array.", sql:"SELECT * FROM posts WHERE 'sql' = ___(tags);", respuestas:["ANY"], pista:"Operador de arrays: 'alguno de'." },
+  { nivel:"experto", desc:"Operador de match en full-text search.", sql:"SELECT * FROM docs WHERE tsv ___ to_tsquery('sql');", respuestas:["@@"], pista:"Enlaza tsvector con tsquery." },
+  { nivel:"experto", desc:"Muestra el plan ejecutado con tiempos reales.", sql:"___ ANALYZE SELECT * FROM users WHERE id = 1;", respuestas:["EXPLAIN"], pista:"Herramienta de análisis de rendimiento." },
+  { nivel:"experto", desc:"Vista que sí guarda el resultado en disco.", sql:"CREATE ___ VIEW ventas AS SELECT ...;", respuestas:["MATERIALIZED"], pista:"A diferencia de VIEW normal." },
+  { nivel:"experto", desc:"Sentencia estándar que hace INSERT/UPDATE/DELETE según coincida.", sql:"___ INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET ...;", respuestas:["MERGE"], pista:"Sincroniza dos tablas." },
+  { nivel:"experto", desc:"Compara cada salario con el promedio de su departamento.", sql:"SELECT name, salary, salary - AVG(salary) OVER (___ BY dept) FROM emp;", respuestas:["PARTITION"], pista:"Divide la ventana en grupos." },
+  { nivel:"experto", desc:"Compara ventas actuales con las de hace 7 días.", sql:"SELECT day, sales - LAG(sales, ___) OVER (ORDER BY day) FROM daily;", respuestas:["7"], pista:"Segundo argumento de LAG: desplazamiento." },
+  { nivel:"experto", desc:"Deduplicación: mantén solo la fila con rn = 1.", sql:"WITH n AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY email ORDER BY created_at DESC) rn FROM users) DELETE FROM users WHERE id IN (SELECT id FROM n WHERE rn ___ 1);", respuestas:[">"], pista:"Quieres borrar los duplicados, no el 'ganador'." },
+  { nivel:"experto", desc:"Ordena la ventana por fecha para el running total.", sql:"SELECT day, SUM(sales) OVER (___ BY day ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM daily;", respuestas:["ORDER"], pista:"Sin este orden el acumulado no tiene sentido." },
+  { nivel:"experto", desc:"Top 3 productos por categoría: filtra el número de fila.", sql:"SELECT category, name FROM (SELECT category, name, ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales DESC) rn FROM products) t WHERE rn ___ 3;", respuestas:["<="], pista:"Los 3 primeros." },
+];
+
+const EJERCICIOS = RAW_EJERCICIOS.map((e, i) => ({ id: "e" + i, ...e }));
+
+const EJ_STATE = {
+  filtroNivel: "todos",
+  orden: [],
+  idx: 0,
+  progreso: JSON.parse(localStorage.getItem("sqlcards_ej_progreso") || "{}"),
+};
+
+function ejGuardar() { localStorage.setItem("sqlcards_ej_progreso", JSON.stringify(EJ_STATE.progreso)); }
+
+function ejVisibles() {
+  return EJERCICIOS.filter(e => EJ_STATE.filtroNivel === "todos" || e.nivel === EJ_STATE.filtroNivel);
+}
+
+function ejRebuild() {
+  EJ_STATE.orden = ejVisibles().map(e => e.id);
+  EJ_STATE.idx = 0;
+}
+
+function ejStats() {
+  document.getElementById("ej-total").textContent = EJERCICIOS.length;
+  const intentados = Object.keys(EJ_STATE.progreso).length;
+  const correctos = Object.values(EJ_STATE.progreso).filter(p => p.correcto).length;
+  document.getElementById("ej-intentados").textContent = intentados;
+  document.getElementById("ej-correctos").textContent = correctos;
+  document.getElementById("ej-pct").textContent = intentados ? Math.round(correctos * 100 / intentados) + "%" : "0%";
+}
+
+function ejRender() {
+  ejStats();
+  const total = EJ_STATE.orden.length;
+  if (total === 0) {
+    document.getElementById("ej-sql").innerHTML = "<em style='color:var(--text-dim)'>Sin ejercicios.</em>";
+    return;
+  }
+  if (EJ_STATE.idx >= total) EJ_STATE.idx = 0;
+  if (EJ_STATE.idx < 0) EJ_STATE.idx = total - 1;
+
+  const ej = EJERCICIOS.find(e => e.id === EJ_STATE.orden[EJ_STATE.idx]);
+  document.getElementById("ej-level").textContent = ej.nivel;
+  document.getElementById("ej-level").className = "card-level " + ej.nivel;
+  document.getElementById("ej-counter").textContent = (EJ_STATE.idx + 1) + " / " + total;
+  document.getElementById("ej-descripcion").textContent = "🎯 " + ej.desc;
+  // Highlight the SQL, but show ___ visibly
+  const marcado = ej.sql.replace(/___/g, "§§§BLANK§§§");
+  let html = highlightSQL(marcado);
+  html = html.replace(/§§§BLANK§§§/g, '<span style="background:rgba(240,136,62,0.2);color:var(--warn);padding:2px 8px;border-radius:4px;border:1px dashed var(--warn);font-weight:600;">___</span>');
+  document.getElementById("ej-sql").innerHTML = html;
+
+  const input = document.getElementById("ej-input");
+  input.value = "";
+  input.disabled = false;
+  input.focus();
+  document.getElementById("ej-feedback").style.display = "none";
+}
+
+function ejCheck() {
+  const ej = EJERCICIOS.find(e => e.id === EJ_STATE.orden[EJ_STATE.idx]);
+  const val = document.getElementById("ej-input").value.trim();
+  if (!val) return;
+  const ok = ej.respuestas.some(r => r.trim().toLowerCase() === val.toLowerCase());
+  const fb = document.getElementById("ej-feedback");
+  fb.style.display = "block";
+  if (ok) {
+    fb.innerHTML = `<div style="background:rgba(126,231,135,0.15);border-left:3px solid var(--accent-2);padding:10px 14px;border-radius:4px;color:var(--accent-2);">✅ ¡Correcto! Respuesta: <strong>${ej.respuestas[0]}</strong></div>`;
+    EJ_STATE.progreso[ej.id] = { correcto: true, fecha: new Date().toISOString().slice(0,10) };
+  } else {
+    fb.innerHTML = `<div style="background:rgba(248,81,73,0.15);border-left:3px solid var(--danger);padding:10px 14px;border-radius:4px;color:var(--danger);">❌ No es correcto. Prueba otra vez o pulsa 💡 Pista.</div>`;
+    if (!EJ_STATE.progreso[ej.id]) EJ_STATE.progreso[ej.id] = { correcto: false, fecha: new Date().toISOString().slice(0,10) };
+  }
+  ejGuardar();
+  ejStats();
+}
+
+function ejHint() {
+  const ej = EJERCICIOS.find(e => e.id === EJ_STATE.orden[EJ_STATE.idx]);
+  const fb = document.getElementById("ej-feedback");
+  fb.style.display = "block";
+  fb.innerHTML = `<div style="background:rgba(88,166,255,0.12);border-left:3px solid var(--accent);padding:10px 14px;border-radius:4px;color:var(--accent);">💡 Pista: ${ej.pista}</div>`;
+}
+
+function ejReveal() {
+  const ej = EJERCICIOS.find(e => e.id === EJ_STATE.orden[EJ_STATE.idx]);
+  const fb = document.getElementById("ej-feedback");
+  fb.style.display = "block";
+  fb.innerHTML = `<div style="background:rgba(188,140,255,0.12);border-left:3px solid var(--purple);padding:10px 14px;border-radius:4px;color:var(--purple);">Respuesta: <strong>${ej.respuestas[0]}</strong>${ej.respuestas.length > 1 ? " (también válido: " + ej.respuestas.slice(1).join(", ") + ")" : ""}</div>`;
+  document.getElementById("ej-input").value = ej.respuestas[0];
+  document.getElementById("ej-input").disabled = true;
+}
+
+function ejNext() { EJ_STATE.idx++; ejRender(); }
+function ejPrev() { EJ_STATE.idx--; ejRender(); }
+function ejShuffle() {
+  const a = EJ_STATE.orden.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  EJ_STATE.orden = a; EJ_STATE.idx = 0; ejRender();
+}
+
+// ============================================================
+// STATE
+// ============================================================
+const STATE = {
+  filtroNivel: "todos",
+  orden: [],
+  idx: 0,
+  revealed: false,
+  progreso: JSON.parse(localStorage.getItem("sqlcards_progreso") || "{}"),
+};
+
+function guardarProgreso() {
+  localStorage.setItem("sqlcards_progreso", JSON.stringify(STATE.progreso));
+}
+
+function cartasVisibles() {
+  return CARDS.filter(c => STATE.filtroNivel === "todos" || c.nivel === STATE.filtroNivel);
+}
+
+function rebuildOrden() {
+  STATE.orden = cartasVisibles().map(c => c.id);
+  STATE.idx = 0;
+  STATE.revealed = false;
+}
+
+// ============================================================
+// HIGHLIGHT SQL (mini)
+// ============================================================
+const KEYWORDS = ["SELECT","FROM","WHERE","INSERT","INTO","VALUES","UPDATE","SET","DELETE","CREATE","TABLE","INDEX","PRIMARY","FOREIGN","KEY","REFERENCES","JOIN","INNER","LEFT","RIGHT","FULL","OUTER","CROSS","ON","AS","AND","OR","NOT","IN","IS","NULL","LIKE","ILIKE","BETWEEN","EXISTS","GROUP","BY","HAVING","ORDER","ASC","DESC","LIMIT","OFFSET","DISTINCT","UNION","ALL","INTERSECT","EXCEPT","CASE","WHEN","THEN","ELSE","END","WITH","RECURSIVE","OVER","PARTITION","ROWS","BETWEEN","UNBOUNDED","PRECEDING","FOLLOWING","CURRENT","ROW","FILTER","INTERVAL","TRUE","FALSE","IF"];
+const FUNCTIONS = ["COUNT","SUM","AVG","MIN","MAX","COALESCE","NULLIF","ROW_NUMBER","RANK","DENSE_RANK","LAG","LEAD","NOW","DATE_TRUNC","CAST","CONCAT","LENGTH","LOWER","UPPER","TRIM","SUBSTRING","EXTRACT","ABS","ROUND"];
+
+function highlightSQL(sql) {
+  // Escape HTML
+  let s = sql.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  // Comments (-- ...)
+  s = s.replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>');
+  // Strings
+  s = s.replace(/('[^']*')/g, '<span class="str">$1</span>');
+  // Numbers
+  s = s.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="num">$1</span>');
+  // Keywords
+  const kwRe = new RegExp("\\b(" + KEYWORDS.join("|") + ")\\b", "gi");
+  s = s.replace(kwRe, '<span class="kw">$1</span>');
+  // Functions
+  const fnRe = new RegExp("\\b(" + FUNCTIONS.join("|") + ")\\b(?=\\s*\\()", "gi");
+  s = s.replace(fnRe, '<span class="fn">$1</span>');
+  return s;
+}
+
+// ============================================================
+// RENDER STUDY
+// ============================================================
+function renderCard() {
+  const vis = cartasVisibles();
+  const total = vis.length;
+  document.getElementById("stat-total").textContent = CARDS.length;
+  const vistas = Object.keys(STATE.progreso).length;
+  document.getElementById("stat-vistas").textContent = vistas;
+  const dominadas = Object.values(STATE.progreso).filter(p => p.rating === 2).length;
+  document.getElementById("stat-dominadas").textContent = dominadas;
+  document.getElementById("stat-racha").textContent = calcularRacha();
+
+  if (total === 0) {
+    document.getElementById("card-sql").innerHTML = "<em style='color:var(--text-dim)'>No hay cartas con este filtro.</em>";
+    document.getElementById("card-level").textContent = "—";
+    document.getElementById("card-counter").textContent = "0 / 0";
+    document.getElementById("card-reveal").classList.remove("visible");
+    return;
+  }
+  if (STATE.idx >= total) STATE.idx = 0;
+  if (STATE.idx < 0) STATE.idx = total - 1;
+
+  const cardId = STATE.orden[STATE.idx];
+  const card = CARDS.find(c => c.id === cardId);
+
+  document.getElementById("card-level").textContent = card.nivel;
+  document.getElementById("card-level").className = "card-level " + card.nivel;
+  document.getElementById("card-counter").textContent = (STATE.idx + 1) + " / " + total;
+  document.getElementById("card-sql").innerHTML = highlightSQL(card.sql);
+
+  const reveal = document.getElementById("card-reveal");
+  const pre = document.getElementById("card-actions-pre");
+  const post = document.getElementById("card-actions-post");
+
+  if (STATE.revealed) {
+    reveal.classList.add("visible");
+    pre.style.display = "none";
+    post.style.display = "flex";
+    document.getElementById("reveal-titulo").textContent = card.titulo;
+    document.getElementById("reveal-explicacion").textContent = card.explicacion;
+    const res = document.getElementById("reveal-resultado");
+    if (card.resultado) { res.textContent = card.resultado; res.style.display = "block"; }
+    else res.style.display = "none";
+    const cont = document.getElementById("reveal-concepts");
+    cont.innerHTML = "";
+    (card.conceptos || []).forEach(c => {
+      const tag = document.createElement("span");
+      tag.className = "concept-tag";
+      tag.textContent = c;
+      tag.onclick = () => { switchView("conceptos"); document.getElementById("search-conceptos").value = c; renderConceptos(); };
+      cont.appendChild(tag);
+    });
+  } else {
+    reveal.classList.remove("visible");
+    pre.style.display = "flex";
+    post.style.display = "none";
+  }
+}
+
+function calcularRacha() {
+  const dias = new Set();
+  Object.values(STATE.progreso).forEach(p => { if (p.fecha) dias.add(p.fecha); });
+  if (dias.size === 0) return 0;
+  const hoy = new Date().toISOString().slice(0,10);
+  let racha = 0;
+  let d = new Date();
+  while (true) {
+    const iso = d.toISOString().slice(0,10);
+    if (dias.has(iso)) { racha++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return racha;
+}
+
+function reveal() { STATE.revealed = true; renderCard(); }
+function rate(r) {
+  const cardId = STATE.orden[STATE.idx];
+  STATE.progreso[cardId] = { rating: r, fecha: new Date().toISOString().slice(0,10) };
+  guardarProgreso();
+  next();
+}
+function next() { STATE.revealed = false; STATE.idx++; renderCard(); }
+function prev() { STATE.revealed = false; STATE.idx--; renderCard(); }
+function shuffle() {
+  const a = STATE.orden.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  STATE.orden = a;
+  STATE.idx = 0;
+  STATE.revealed = false;
+  renderCard();
+}
+
+// ============================================================
+// RENDER DICTIONARIES
+// ============================================================
+function renderConceptos() {
+  const q = document.getElementById("search-conceptos").value.toLowerCase();
+  const grid = document.getElementById("grid-conceptos");
+  grid.innerHTML = "";
+  const filtrados = CONCEPTOS.filter(c =>
+    !q || c.nombre.toLowerCase().includes(q) ||
+    c.categoria.toLowerCase().includes(q) ||
+    c.def.toLowerCase().includes(q)
+  );
+  if (filtrados.length === 0) { grid.innerHTML = "<p class='empty'>Sin resultados.</p>"; return; }
+  filtrados.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "dict-item";
+    el.innerHTML = `
+      <div class="categoria">${c.categoria}</div>
+      <h4>${c.nombre}</h4>
+      <div class="def">${c.def}</div>
+      <pre class="sql">${highlightSQL(c.ejemplo)}</pre>
+    `;
+    grid.appendChild(el);
+  });
+}
+
+function renderCasos() {
+  const q = document.getElementById("search-casos").value.toLowerCase();
+  const grid = document.getElementById("grid-casos");
+  grid.innerHTML = "";
+  const filtrados = CASOS.filter(c =>
+    !q || c.problema.toLowerCase().includes(q) ||
+    c.descripcion.toLowerCase().includes(q) ||
+    c.soluciones.some(s => s.sql.toLowerCase().includes(q))
+  );
+  if (filtrados.length === 0) { grid.innerHTML = "<p class='empty'>Sin resultados.</p>"; return; }
+  filtrados.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "dict-item case-item";
+    let html = `
+      <div class="problema">CASO</div>
+      <h4>${c.problema}</h4>
+      <div class="def">${c.descripcion}</div>
+    `;
+    c.soluciones.forEach(s => {
+      html += `
+        <div class="solucion">
+          <div class="sol-titulo">▸ ${s.titulo}</div>
+          <pre class="sql">${highlightSQL(s.sql)}</pre>
+          ${s.nota ? `<div class="sol-nota">${s.nota}</div>` : ""}
+        </div>
+      `;
+    });
+    el.innerHTML = html;
+    grid.appendChild(el);
+  });
+}
+
+// ============================================================
+// NAV
+// ============================================================
+function switchView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+  if (name === "conceptos") renderConceptos();
+  if (name === "casos") renderCasos();
+  if (name === "ejercicios") { ejRebuild(); ejRender(); }
+}
+
+// ============================================================
+// SHARE / EXPORT / IMPORT
+// ============================================================
+function exportar() {
+  const data = { cards: CARDS, conceptos: CONCEPTOS, casos: CASOS, progreso: STATE.progreso, exported_at: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "sqlcards-mazo.json"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function shareLink() {
+  const payload = { progreso: STATE.progreso };
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const url = location.href.split("#")[0] + "#p=" + b64;
+  navigator.clipboard.writeText(url).then(() => {
+    alert("Link copiado. Al abrirlo se restaurará el progreso.");
+  }).catch(() => {
+    prompt("Copia este link:", url);
+  });
+}
+
+function cargarDesdeHash() {
+  if (location.hash.startsWith("#p=")) {
+    try {
+      const payload = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))));
+      if (payload.progreso) { STATE.progreso = payload.progreso; guardarProgreso(); }
+    } catch (e) { console.warn("hash inválido"); }
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.querySelectorAll("nav button").forEach(b => {
+  b.onclick = () => switchView(b.dataset.view);
+});
+document.querySelectorAll("#filter-nivel .chip").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll("#filter-nivel .chip").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    STATE.filtroNivel = b.dataset.nivel;
+    rebuildOrden();
+    renderCard();
+  };
+});
+document.getElementById("btn-revelar").onclick = reveal;
+document.getElementById("btn-prev").onclick = prev;
+document.getElementById("btn-next").onclick = next;
+document.getElementById("btn-shuffle").onclick = shuffle;
+document.querySelectorAll("[data-rating]").forEach(b => {
+  b.onclick = () => rate(parseInt(b.dataset.rating));
+});
+document.getElementById("btn-export").onclick = exportar;
+document.getElementById("btn-share-link").onclick = shareLink;
+document.getElementById("btn-import").onclick = () => document.getElementById("file-import").click();
+document.getElementById("file-import").onchange = (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (data.progreso) { STATE.progreso = data.progreso; guardarProgreso(); renderCard(); alert("Progreso importado."); }
+    } catch(e) { alert("Archivo inválido."); }
+  };
+  r.readAsText(f);
+};
+document.getElementById("btn-reset").onclick = () => {
+  if (confirm("¿Borrar todo el progreso?")) { STATE.progreso = {}; guardarProgreso(); renderCard(); }
+};
+document.getElementById("search-conceptos").oninput = renderConceptos;
+document.getElementById("search-casos").oninput = renderCasos;
+
+// Ejercicios
+document.querySelectorAll("#ej-filter-nivel .chip").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll("#ej-filter-nivel .chip").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    EJ_STATE.filtroNivel = b.dataset.nivel;
+    ejRebuild(); ejRender();
+  };
+});
+document.getElementById("ej-check").onclick = ejCheck;
+document.getElementById("ej-hint").onclick = ejHint;
+document.getElementById("ej-reveal").onclick = ejReveal;
+document.getElementById("ej-next").onclick = ejNext;
+document.getElementById("ej-prev").onclick = ejPrev;
+document.getElementById("ej-shuffle").onclick = ejShuffle;
+document.getElementById("ej-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); ejCheck(); }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!document.getElementById("view-estudio").classList.contains("active")) return;
+  if (document.activeElement.tagName === "INPUT") return;
+  if (e.code === "Space") { e.preventDefault(); if (!STATE.revealed) reveal(); }
+  else if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (STATE.revealed && (e.key === "1" || e.key === "2" || e.key === "3")) {
+    rate(parseInt(e.key) - 1);
+  }
+});
+
+cargarDesdeHash();
+rebuildOrden();
+renderCard();
+</script>
+</body>
+</html>
